@@ -11,24 +11,19 @@ fn main(){
 
     println!("Part 1: {}", elves.iter().map(|e| e.cals).max().unwrap());
 
-    let mut n_most_cals_sum = 0;
-    let mut n_most_cal_elves_indices = [elves.len(); N_HIGHEST_CALORIE_ELVES as usize];
+    let (mut lowest_cals, mut lowest_cals_index) = (0, 0);
+    let mut most_cal_elves = [0; N_HIGHEST_CALORIE_ELVES as usize];
 
-    for i in 0..N_HIGHEST_CALORIE_ELVES{
-        let (max_cal_elf_index, cals) = elves.iter().enumerate()
-            .filter_map(|(i, e)| {
-                match n_most_cal_elves_indices.contains(&i) {
-                    true => None,
-                    false => Some((i, e.cals))
-                }
-            })
-            .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
-            .unwrap();
-        n_most_cals_sum += cals;
-        n_most_cal_elves_indices[i as usize] = max_cal_elf_index;
-    }
+    elves.iter().for_each(|elf| {
+        if elf.cals > lowest_cals {
+            most_cal_elves[lowest_cals_index] = elf.cals;
+            let new_lowest = most_cal_elves.iter().enumerate().min_by(|(_, a), (_, b)| a.cmp(b)).unwrap();
+            lowest_cals = *new_lowest.1;
+            lowest_cals_index = new_lowest.0;
+        }
+    });
 
-    println!("Part 2: {}", n_most_cals_sum);
+    println!("Part 2: {}", most_cal_elves.iter().sum::<u32>());
 }
 
 
