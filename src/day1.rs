@@ -11,18 +11,18 @@ fn main(){
 
     println!("Part 1: {}", elves.iter().map(|e| e.cals).max().unwrap());
 
-    let mut n_most_calories = 0;
+    let mut n_most_cals_sum = 0;
 
     for _ in 0..N_HIGHEST_CALORIE_ELVES{
         let (max_cal_elf_index, cals) = elves.iter().enumerate()
             .map(|(i, e)| (i, e.cals))
             .max_by(|(_, c1), (_, c2)| c1.cmp(c2))
             .unwrap();
-        n_most_calories += cals;
+        n_most_cals_sum += cals;
         elves.remove(max_cal_elf_index);
     }
 
-    println!("Part 2: {}", n_most_calories);
+    println!("Part 2: {}", n_most_cals_sum);
 }
 
 
