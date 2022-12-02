@@ -21,7 +21,7 @@ fn main() {
             Move::Paper => RoundResult::Draw,
             Move::Scissors => RoundResult::Win,
         };
-        r.you = r.opp.resulting_move(&r_result);
+        r.you = r.opp.counter_move(&r_result);
     });
 
     println!("Part 2: {}", rounds.iter().map(|r| r.score()).sum::<u32>());
@@ -85,7 +85,7 @@ impl Move {
         }
     }
 
-    pub fn resulting_move(&self, result: &RoundResult) -> Move {
+    pub fn counter_move(&self, result: &RoundResult) -> Move {
         match result {
             RoundResult::Win => self.winning_counter_move(),
             RoundResult::Draw => self.clone(),
