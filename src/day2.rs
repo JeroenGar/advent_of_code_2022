@@ -11,30 +11,27 @@ fn main() {
 
     // Part 1
     let mut rounds: Vec<Round> = parse_to_vec(&input, "\n").unwrap();
-    println!("Part 1: {}", rounds.iter().map(|r| r.score()).sum::<u32>());
+    println!("Part 1: {}", rounds.iter().map(|r| r.score() as u32).sum::<u32>());
 
     // Part 2
-    //Resolve the misunderstanding
+    // Resolve the misunderstanding
     rounds.iter_mut().for_each(|r| {
-        let r_result = match r.you {
-            Move::Rock => RoundResult::Loss,
-            Move::Paper => RoundResult::Draw,
-            Move::Scissors => RoundResult::Win,
+        r.1 = match r.1 {
+            0 => losing_counter(r.0),
+            1 => r.0,
+            2 => winning_counter(r.0),
+            _ => panic!("invalid input"),
         };
-        r.you = r.opp.counter_move(&r_result);
     });
 
-    println!("Part 2: {}", rounds.iter().map(|r| r.score()).sum::<u32>());
+    println!("Part 2: {}", rounds.iter().map(|r| r.score() as u32).sum::<u32>());
 }
 
-struct Round {
-    opp : Move,
-    you : Move
-}
+struct Round(u8, u8);
 
 impl Round {
-    fn score(&self) -> u32{
-        self.opp.round_result(&self.you).score() + self.you.score()
+    fn score(&self) -> u8{
+        move_score(self.1) + round_score(self.0, self.1)
     }
 }
 
@@ -42,86 +39,33 @@ impl FromStr for Round {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut split = s.split(" ");
-        let opp = match split.next().unwrap() {
-            "A" => Move::Rock,
-            "B" => Move::Paper,
-            "C" => Move::Scissors,
-            _ => return Err(())
-        };
-        let you = match split.next().unwrap() {
-            "X" => Move::Rock,
-            "Y" => Move::Paper,
-            "Z" => Move::Scissors,
-            _ => return Err(())
-        };
-        Ok(Round {opp, you})
+        if s.len() != 3 {
+            return Err(());
+        }
+        let opp = s.chars().nth(0).unwrap() as u8 - 65; //ASCII: A = 65
+        let you = s.chars().nth(2).unwrap() as u8 - 88; //ASCII: X = 88
+        Ok(Round(opp,you))
     }
 }
 
-#[derive(PartialEq, Clone)]
-enum Move {
-    Rock,
-    Paper,
-    Scissors,
+fn losing_counter(m : u8) -> u8 {
+    (m + 2) % 3
 }
 
-impl Move {
-    pub fn score(&self) -> u32 {
-        match self {
-            Move::Rock => 1,
-            Move::Paper => 2,
-            Move::Scissors => 3
-        }
-    }
-
-    pub fn round_result(&self, you: &Move) -> RoundResult {
-        if self == you {
-            RoundResult::Draw
-        } else if self.winning_counter_move() == *you {
-            RoundResult::Win
-        } else {
-            RoundResult::Loss
-        }
-    }
-
-    pub fn counter_move(&self, result: &RoundResult) -> Move {
-        match result {
-            RoundResult::Win => self.winning_counter_move(),
-            RoundResult::Draw => self.clone(),
-            RoundResult::Loss => self.losing_counter_move()
-        }
-    }
-
-    pub fn winning_counter_move(&self) -> Move {
-        match self {
-            Move::Rock => Move::Paper,
-            Move::Paper => Move::Scissors,
-            Move::Scissors => Move::Rock
-        }
-    }
-
-    pub fn losing_counter_move(&self) -> Move {
-        match self {
-            Move::Rock => Move::Scissors,
-            Move::Paper => Move::Rock,
-            Move::Scissors => Move::Paper
-        }
-    }
+fn winning_counter(m : u8) -> u8 {
+    (m + 1) % 3
 }
 
-enum RoundResult {
-    Win,
-    Draw,
-    Loss,
+fn move_score(m : u8) -> u8 {
+    m + 1
 }
 
-impl RoundResult {
-    fn score(&self) -> u32{
-        match self {
-            RoundResult::Win => 6,
-            RoundResult::Draw => 3,
-            RoundResult::Loss => 0
-        }
+fn round_score(opp : u8, you : u8) -> u8 {
+    return if opp == you {
+        3
+    } else if you == winning_counter(opp) {
+        6
+    } else {
+        0
     }
 }
