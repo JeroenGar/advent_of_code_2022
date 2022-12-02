@@ -27,7 +27,7 @@ fn main() {
     println!("Part 2: {}", rounds.iter().map(|r| r.score() as u32).sum::<u32>());
 }
 
-struct Round(u8, u8);
+struct Round(u8, u8); // (opponent, you) where 0 = rock, 1 = paper, 2 = scissors
 
 impl Round {
     fn score(&self) -> u8{
