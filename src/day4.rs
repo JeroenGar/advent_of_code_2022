@@ -36,7 +36,8 @@ impl RangePair {
     pub fn inclusive(&self) -> bool {
         self.a_min <= self.b_min && self.b_max <= self.a_max || self.b_min <= self.a_min && self.a_max <= self.b_max
     }
+
     pub fn overlaps(&self) -> bool {
-        self.a_min <= self.b_min && self.b_min <= self.a_max || self.b_min <= self.a_min && self.a_min <= self.b_max
+        !(self.a_min > self.b_max || self.b_min > self.a_max)
     }
 }
