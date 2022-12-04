@@ -72,4 +72,3 @@ fn find_badge(r1: &Rucksack, r2: &Rucksack, r3: &Rucksack) -> Result<u32, ()> {
     }
     Err(())
 }
-
