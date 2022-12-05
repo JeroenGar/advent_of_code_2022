@@ -1,5 +1,6 @@
 use std::fs;
 use std::str::FromStr;
+use itertools::Itertools;
 
 use aoc2022::parse_to_vec;
 
@@ -8,15 +9,12 @@ fn main() {
     let rucksacks: Vec<Rucksack> = parse_to_vec(&input, "\n").unwrap();
 
     let sum_misplaced_items = rucksacks.iter()
-        .map(|r| r.misplaced_item.unwrap())
-        .sum::<u32>();
+        .map(|r| r.misplaced_item.unwrap()).sum::<u32>();
 
     println!("Part 1: {}", sum_misplaced_items);
 
-    let sum_badges = rucksacks.chunks(3)
-        .map(|chunk| {
-            find_badge(&chunk[0], &chunk[1], &chunk[2]).unwrap()
-        }).sum::<u32>();
+    let sum_badges = rucksacks.iter().tuples()
+        .map(|(r1,r2,r3)| find_badge(&r1, &r2, &r3).unwrap()).sum::<u32>();
 
     println!("Part 2: {}", sum_badges);
 }
