@@ -145,7 +145,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
                 }
             });
         }
-        //Execute operation in all positions located in to "to" stack
+        //Execute operation in all positions located in the "to" stack
         {
             let pos_in_to = &mut positions[op.to];
             pos_in_to.iter_mut().for_each(|p| {
