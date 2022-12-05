@@ -14,7 +14,7 @@ pub fn main() {
     let crate_stacks_input = input_split.next().unwrap();
     let crane_operations = input_split.next().unwrap();
 
-    let mut crate_stacks_lines = crate_stacks_input.split('\n').rev().skip(1).collect::<Vec<&str>>();
+    let crate_stacks_lines = crate_stacks_input.split('\n').rev().skip(1).collect::<Vec<&str>>();
 
     let n_crates = (crate_stacks_lines[0].len() + 1) / 4;
     let crate_char_indices = (0..n_crates).map(|i| 1 + (4 * i)).collect::<Vec<usize>>();
