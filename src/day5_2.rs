@@ -8,7 +8,7 @@ use aoc2022::parse_to_vec;
 
 pub fn main() {
     let start = Instant::now();
-    let input = std::fs::read_to_string("input/2022/day5_210MB.txt").unwrap();
+    let input = std::fs::read_to_string("input/2022/day5_6MB.txt").unwrap();
     let mut input_split = input.split("\n\n");
 
     let crate_stacks_input = input_split.next().unwrap();
@@ -35,12 +35,12 @@ pub fn main() {
 
     println!("Parsed in {}ms", start.elapsed().as_millis());
 
-    let start_part_1 = Instant::now();
 
-    // the final positions of chars we have to print
+    let start_part_1 = Instant::now();
+    //Positions are indexed based on their current stack
     let mut positions_1 = (0..n_crates).map(|i| vec![Position::new(i)]).collect::<Vec<Vec<Position>>>();
 
-    //Do the crane ops in reverse
+    //Execute all crane operations (in reverse)
     solve(&rev_flip_crane_ops, &mut positions_1, true);
 
     let dur_part_1 = start_part_1.elapsed();
@@ -48,10 +48,10 @@ pub fn main() {
     println!("Part 1: {}", to_string(&positions_1, &crate_stacks));
     println!("in {}ms", dur_part_1.as_millis());
 
+    //Do the same for part 2 but without reversing the crates
     let start_part_2 = Instant::now();
 
     let mut positions_2 = (0..n_crates).map(|i| vec![Position::new(i)]).collect::<Vec<Vec<Position>>>();
-
     solve(&rev_flip_crane_ops, &mut positions_2, false);
     let dur_part_2 = start_part_2.elapsed();
 
@@ -112,7 +112,7 @@ impl Position {
         if op.from == self.curr_stack {
             //Crates are being moved from this stack
             if self.n_crates_on_top < op.n_crates {
-                //The crate being is moved
+                //Position changes stack
                 self.curr_stack = op.to;
                 if reverse {
                     self.n_crates_on_top = op.n_crates - self.n_crates_on_top - 1;
@@ -120,7 +120,7 @@ impl Position {
                     self.n_crates_on_top = self.n_crates_on_top;
                 }
             } else {
-                // Not enough crates are moved to affect this position's stack
+                //Not enough crates are moved to affect this position's stack
                 self.n_crates_on_top -= op.n_crates;
             }
         } else if op.to == self.curr_stack {
@@ -133,6 +133,7 @@ impl Position {
 pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, reverse: bool) {
     let mut changed_positions = vec![];
     crane_ops.iter().for_each(|op| {
+        //Update all positions in the "from" stack
         {
             let pos_in_from = &mut positions[op.from];
             pos_in_from.iter_mut().enumerate().for_each(|(i, p)| {
@@ -143,6 +144,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
                 }
             });
         }
+        //Update all positions in the "to" stack
         {
             let pos_in_to = &mut positions[op.to];
             pos_in_to.iter_mut().for_each(|p| {
@@ -150,6 +152,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
                 p.do_operation(op, reverse);
             });
         }
+        //Change the positions which have changed stack
         changed_positions.iter().sorted().rev().for_each(|i| {
             let pos = positions[op.from].swap_remove(*i);
             positions[op.to].push(pos);
