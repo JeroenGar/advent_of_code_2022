@@ -59,7 +59,6 @@ pub fn main() {
     println!("in {}ms", dur_part_2.as_millis());
 }
 
-#[derive(Clone)]
 pub struct CrateStack {
     crates: Vec<char>,
 }
@@ -107,7 +106,7 @@ impl Position {
         Self { org_stack, curr_stack: org_stack, n_crates_on_top: 0 }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn do_operation(&mut self, op: &CraneOp, reverse: bool) {
         if op.from == self.curr_stack {
             //Crates are being moved from this stack
@@ -137,7 +136,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
         {
             let pos_in_from = &mut positions[op.from];
             pos_in_from.iter_mut().enumerate().for_each(|(i, p)| {
-                assert_eq!(p.curr_stack, op.from);
+                debug_assert!(p.curr_stack == op.from);
                 p.do_operation(op, reverse);
                 if p.curr_stack == op.to {
                     //Position has changed stack
@@ -149,7 +148,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
         {
             let pos_in_to = &mut positions[op.to];
             pos_in_to.iter_mut().for_each(|p| {
-                assert_eq!(p.curr_stack, op.to);
+                debug_assert!(p.curr_stack == op.to);
                 p.do_operation(op, reverse);
             });
         }
