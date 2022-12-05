@@ -3,7 +3,7 @@ use std::str::FromStr;
 use aoc2022::parse_to_vec;
 
 pub fn main(){
-    let input = std::fs::read_to_string("input/2022/day5.txt").unwrap();
+    let input = std::fs::read_to_string("input/2022/day5_6MB.txt").unwrap();
     let mut input_split = input.split("\n\n");
 
     let crate_stacks_input = input_split.next().unwrap();

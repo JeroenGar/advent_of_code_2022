@@ -27,5 +27,12 @@ path = "src/day4.rs"
 name = "day5"
 path = "src/day5.rs"
 
+[[bin]]
+name = "day5_2"
+path = "src/day5_2.rs"
+
 [dependencies]
 itertools = "0.10.5"
+
+[profile.release]
+opt-level = 3
