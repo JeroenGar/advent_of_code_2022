@@ -8,7 +8,7 @@ use aoc2022::parse_to_vec;
 
 pub fn main() {
     let start = Instant::now();
-    let input = std::fs::read_to_string("input/2022/day5_6MB.txt").unwrap();
+    let input = std::fs::read_to_string("input/2022/day5_210MB.txt").unwrap();
     let mut input_split = input.split("\n\n");
 
     let crate_stacks_input = input_split.next().unwrap();
@@ -154,7 +154,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
             });
         }
         //Update the positions vector for the positions which have changed stack
-        changed_positions.iter().sorted().rev().for_each(|i| {
+        changed_positions.iter().rev().for_each(|i| {
             let pos = positions[op.from].swap_remove(*i);
             positions[op.to].push(pos);
         });
