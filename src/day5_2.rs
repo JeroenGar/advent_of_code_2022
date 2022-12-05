@@ -133,18 +133,19 @@ impl Position {
 pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, reverse: bool) {
     let mut changed_positions = vec![];
     crane_ops.iter().for_each(|op| {
-        //Update all positions in the "from" stack
+        //Execute operation in all positions located in the "from" stack
         {
             let pos_in_from = &mut positions[op.from];
             pos_in_from.iter_mut().enumerate().for_each(|(i, p)| {
                 assert_eq!(p.curr_stack, op.from);
                 p.do_operation(op, reverse);
                 if p.curr_stack == op.to {
+                    //Position has changed stack
                     changed_positions.push(i);
                 }
             });
         }
-        //Update all positions in the "to" stack
+        //Execute operation in all positions located in to "from" stack
         {
             let pos_in_to = &mut positions[op.to];
             pos_in_to.iter_mut().for_each(|p| {
@@ -152,7 +153,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
                 p.do_operation(op, reverse);
             });
         }
-        //Change the positions which have changed stack
+        //Update the positions vector for the positions which have changed stack
         changed_positions.iter().sorted().rev().for_each(|i| {
             let pos = positions[op.from].swap_remove(*i);
             positions[op.to].push(pos);
@@ -162,6 +163,7 @@ pub fn solve(crane_ops: &Vec<CraneOp>, positions: &mut Vec<Vec<Position>>, rever
 }
 
 pub fn to_string(position: &Vec<Vec<Position>>, crate_stacks: &Vec<CrateStack>) -> String {
+    //Search the correct char for each position and order them in the original stack order
     position.iter().flatten()
         .sorted_by(|a, b| a.org_stack.cmp(&b.org_stack))
         .map(|p| {
