@@ -24,7 +24,7 @@ pub fn main(){
 
     let crane_operations : Vec<CraneOp> = parse_to_vec(crane_operations, "\n").unwrap();
 
-    //Do the crane operations
+    //Do the crane ops
     let mut crate_stacks_1 = crate_stacks.clone();
     crane_operations.iter().for_each(|op| {
         let popped_crates = crate_stacks_1.get_mut(op.from).unwrap().pop_n(op.n_crates);
@@ -38,7 +38,9 @@ pub fn main(){
         crate_stacks_2.get_mut(op.to).unwrap().push(popped_crates);
     });
 
-    let top_crate_to_string = |cs : VecDeque<CrateStack>| {cs.iter().map(|s| *s.crates.get(s.crates.len()-1).unwrap()).collect::<String>()};
+    let top_crate_to_string = |cs : VecDeque<CrateStack>| {
+        cs.iter().map(|s| *s.crates.get(s.crates.len()-1).unwrap()).collect::<String>()
+    };
 
     println!("Part 1: {}", top_crate_to_string(crate_stacks_1));
     println!("Part 2: {}", top_crate_to_string(crate_stacks_2));
@@ -51,17 +53,11 @@ pub struct CrateStack{
 
 impl CrateStack {
     pub fn pop_n(&mut self, n : usize) -> Vec<char> {
-        let mut crates = Vec::with_capacity(n);
-        for _ in 0..n {
-            crates.push(self.crates.pop_back().unwrap());
-        }
-        crates
+        (0..n).map(|_| self.crates.pop_back().unwrap()).collect()
     }
 
     pub fn push(&mut self, crates : Vec<char>) {
-        for c in crates {
-            self.crates.push_back(c);
-        }
+        self.crates.extend(crates);
     }
 }
 
@@ -76,9 +72,7 @@ impl FromStr for CraneOp {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let split = s.split(' ').collect::<Vec<&str>>();
-        if split.len() != 6 {
-            return Err(());
-        }
+        if split.len() != 6 { return Err(()); }
 
         let n_crates = split.get(1).unwrap().parse::<usize>().unwrap();
         let from = split.get(3).unwrap().parse::<usize>().unwrap() - 1;
