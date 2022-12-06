@@ -15,7 +15,6 @@ fn main() {
 
 fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> usize {
     //Returns the index after which the first substring containing n unique characters is found
-
     input.windows(n_unique_chars).enumerate()
         .find(|(i, window)| {
             window.iter().map(|c| c).unique().count() == n_unique_chars
@@ -25,7 +24,6 @@ fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> usize {
 
 fn find_marker_efficient(input: &Vec<char>, n_unique_chars: usize) -> usize {
     let mut windows = input.windows(n_unique_chars);
-
     let mut marker_index = n_unique_chars;
     while let Some(window) = windows.next() {
         let n_unique_in_window = window.iter().map(|c| c).unique().count();
