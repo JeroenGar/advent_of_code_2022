@@ -1,105 +1,105 @@
 use std::fs;
+use std::ops::Range;
 use std::path::Path;
 use std::time::Instant;
 
 use itertools::Itertools;
 
 fn main() {
-    let input = fs::read_to_string(Path::new("input/2022/day6.txt")).unwrap();
-    let char_vec = input.chars().filter(|c| c.is_alphabetic()).collect::<Vec<char>>();
+    let input = std::fs::read_to_string("input/2022/day6.txt").unwrap();
+    println!("{} chars", input.len());
+    let char_vec = input.chars().filter(|c| {
+        *c as u32 >= 32 && *c as u32 <= 126
+    }).collect::<Vec<char>>();
+
+    println!("Part 1: {}", find_marker_naive(&char_vec, 4).unwrap());
+    println!("Part 2: {}", find_marker_naive(&char_vec, 4).unwrap());
+    println!();
+    //Extra
+    let input = std::fs::read_to_string("input/2022/day6_extra.txt").unwrap();
+    println!("{} chars", input.len());
+    let char_vec = input.chars().filter(|c| {
+        *c as u32 >= 32 && *c as u32 <= 126
+    }).collect::<Vec<char>>();
+    let n_threads = 8;
+
+    println!("{} threads", n_threads);
+
     let start = Instant::now();
-    println!("Part 1: {}", find_marker_multithreaded(&char_vec, 4, 8));
-    println!("Part 2: {}", find_marker_multithreaded(&char_vec, 14, 8));
-    println!("Time: {}ms", start.elapsed().as_millis());
+    println!("Part 1: {} ({}ms)", find_range_markers_mt(&char_vec, 94..95, n_threads).iter().sum::<usize>(), start.elapsed().as_millis());
+
+    let start = Instant::now();
+    println!("Part 2: {} ({}ms)", find_range_markers_mt(&char_vec, 1..95, n_threads).iter().sum::<usize>(), start.elapsed().as_millis());
 }
 
-fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> usize {
+fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> Option<usize> {
     //Returns the index after which the first substring containing n unique characters is found
     input.windows(n_unique_chars).enumerate()
         .find(|(_, window)| {
             window.iter().map(|c| c).unique().count() == n_unique_chars
         })
-        .map(|(i, _)| i + n_unique_chars).unwrap()
+        .map(|(i, _)| i + n_unique_chars)
 }
 
-fn find_marker_efficient(input: &Vec<char>, n_unique_chars: usize) -> usize{
-    let mut windows = input.windows(n_unique_chars);
-    let mut marker_index = n_unique_chars;
-    while let Some(window) = windows.next() {
-        let mut chars_seen = [false; 26];
-        let mut skip_n_windows = None;
-        for (i,c) in window.iter().enumerate().rev() {
-            //Try to find duplicate characters from the back of the window to the front
-            //This maximizes the number of windows we can potentially skip
-            let char_seen = &mut chars_seen[*c as usize - 'a' as usize];
-            match *char_seen {
-                false => *char_seen = true,
-                true => {
-                    skip_n_windows = Some(i);
-                    break;
-                }
-            }
-        }
-        match skip_n_windows{
-            None => return marker_index,
-            Some(n) => {
-                marker_index += n;
-                for _ in 0..n {
-                    windows.next();
-                }
-            }
-        }
-        marker_index += 1;
-    }
-    panic!("No substring with {} unique characters found", n_unique_chars);
-}
-
-fn find_marker_more_efficient(input: &Vec<char>, start: usize, stop: usize, n_unique_chars: usize) -> Option<usize>{
-    let mut last_seen = [None; 26];
-    let mut potential_start = 0;
+fn find_marker_efficient(input: &Vec<char>, start: usize, stop: usize, n_unique_chars: usize) -> Option<usize>{
+    let mut last_seen = [None; 95];
+    let mut potential_start = start as i64 -1;
     for i in start..stop{
         let c = input[i];
-        let index = c as usize - 'a' as usize;
+        let index = c as usize - ' ' as usize;
         let prev_last_seen = last_seen[index];
         match prev_last_seen{
             None => (),
             Some(prev_i) => {
                 if i < prev_i + n_unique_chars{
-                    //This characters makes the substring not unique
-                    potential_start = usize::max(potential_start, prev_i);
+                    //This character makes the substring not unique, the next potential start is after the previous occurrence of this character
+                    potential_start = i64::max(potential_start, prev_i as i64);
                 }
             }
         }
         last_seen[index] = Some(i);
-        if i == potential_start + n_unique_chars{
-            return Some(potential_start + n_unique_chars + 1);
+        if i == (potential_start + n_unique_chars as i64) as usize{
+            return Some((potential_start + n_unique_chars as i64) as usize + 1);
         }
     }
     None
 }
 
-
-fn find_marker_multithreaded(input: &Vec<char>, n_unique_chars: usize, n_threads: usize) -> usize{
-    let n_chars = input.len();
-    let overlap = n_unique_chars - 1;
-    let indices = (0..n_threads).map(|i| {
-        let start = (i * (n_chars) / n_threads);
-        let end = ((i + 1) * (n_chars) / n_threads) + overlap;
-        (usize::max(0,start), usize::min(end,n_chars))
-    }).collect::<Vec<(usize, usize)>>();
-
-    let mut results = (0..n_threads).map(|_| None).collect::<Vec<Option<usize>>>();
+fn find_range_markers_mt(input: &Vec<char>, range: Range<usize>, n_threads: usize) -> Vec<usize> {
+    let blocks = create_blocks(input.len(), range.end, n_threads);
+    let mut results = (0..n_threads).map(|_| vec![]).collect::<Vec<Vec<Option<usize>>>>();
 
     rayon::scope(|s| {
         let mut results_iter_mut = results.iter_mut();
         for i in 0..n_threads {
-            let (start,end) = indices[i];
+            let (mut start,end) = blocks[i];
             let mut result_slice = results_iter_mut.next().unwrap();
+            let t_range = range.clone();
             s.spawn(move |_| {
-                *result_slice = find_marker_more_efficient(input, start, end, n_unique_chars);
+                for j in t_range{
+                    let result = find_marker_efficient(input, start, end, j);
+                    if result.is_some(){
+                        start = result.unwrap() - j;
+                    }
+                    else{
+                        start = end;
+                    }
+                    result_slice.push(result);
+                }
             });
         }
     });
+    (0..range.len()).map(|i| {
+        results.iter().filter_map(|r| r[i]).min().unwrap()
+    }).collect()
+}
 
-    results.into_iter().filter_map(|x| x).min().unwrap()
+
+fn create_blocks(input_len : usize, n_unique_chars: usize, n_threads: usize) -> Vec<(usize,usize)>{
+    let overlap = n_unique_chars - 1;
+    (0..n_threads).map(|i| {
+        let start = (i * (input_len) / n_threads);
+        let end = ((i + 1) * (input_len) / n_threads) + overlap;
+        (usize::max(0,start), usize::min(end,input_len))
+    }).collect::<Vec<(usize, usize)>>()
 }
