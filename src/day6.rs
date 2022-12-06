@@ -5,12 +5,12 @@ use std::time::Instant;
 use itertools::Itertools;
 
 fn main() {
-    let input = fs::read_to_string(Path::new("input/2022/day6.txt")).expect("Could not read file");
+    let input = fs::read_to_string(Path::new("/input/2022/day6.txt")).expect("Could not read file");
     let char_vec = input.chars().collect::<Vec<char>>();
     let start = Instant::now();
     println!("Part 1: {}", find_marker_efficient(&char_vec, 4));
     println!("Part 2: {}", find_marker_efficient(&char_vec, 14));
-    println!("Time: {}us", start.elapsed().as_micros());
+    println!("Time: {}ms", start.elapsed().as_millis());
 }
 
 fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> usize {
@@ -22,11 +22,20 @@ fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> usize {
         .map(|(i, _)| i + n_unique_chars).unwrap()
 }
 
-fn find_marker_efficient(input: &Vec<char>, n_unique_chars: usize) -> usize {
+fn find_marker_efficient(input: &Vec<char>, n_unique_chars: usize) -> usize{
     let mut windows = input.windows(n_unique_chars);
     let mut marker_index = n_unique_chars;
     while let Some(window) = windows.next() {
-        let n_unique_in_window = window.iter().map(|c| c).unique().count();
+        let mut char_seen = [false; 26];
+        let mut n_unique_in_window = 0;
+        for c in window {
+            let char_index = *c as usize - 'a' as usize;
+            if !char_seen[char_index] {
+                //Char has not been seen before
+                char_seen[char_index] = true;
+                n_unique_in_window += 1;
+            }
+        }
         if n_unique_in_window == n_unique_chars {
             return marker_index;
         }
