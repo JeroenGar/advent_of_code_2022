@@ -26,10 +26,10 @@ fn main() {
     println!("{} threads", n_threads);
 
     let start = Instant::now();
-    println!("Part 1: {} ({}ms)", find_range_markers_mt(&char_vec, 94..95, n_threads).iter().sum::<usize>(), start.elapsed().as_millis());
+    println!("Part 1: {} ({}µs)", find_range_markers_mt(&char_vec, 94..95, n_threads).iter().sum::<usize>(), start.elapsed().as_micros());
 
     let start = Instant::now();
-    println!("Part 2: {} ({}ms)", find_range_markers_mt(&char_vec, 1..95, n_threads).iter().sum::<usize>(), start.elapsed().as_millis());
+    println!("Part 2: {} ({}µs)", find_range_markers_mt(&char_vec, 1..95, n_threads).iter().sum::<usize>(), start.elapsed().as_micros());
 }
 
 fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> Option<usize> {
