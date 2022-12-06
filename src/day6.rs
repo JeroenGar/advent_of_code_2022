@@ -5,8 +5,7 @@ use std::time::Instant;
 use itertools::Itertools;
 
 fn main() {
-    let input = fs::read_to_string("/Users/jern/Downloads/aoc22d6xxl.txt").unwrap();
-    //let input = fs::read_to_string(Path::new("input/2022/day6.txt")).unwrap();
+    let input = fs::read_to_string(Path::new("input/2022/day6.txt")).unwrap();
     let char_vec = input.chars().filter(|c| c.is_alphabetic()).collect::<Vec<char>>();
     let start = Instant::now();
     println!("Part 1: {}", find_marker_multithreaded(&char_vec, 4, 8));
