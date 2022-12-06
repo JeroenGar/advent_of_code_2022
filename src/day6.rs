@@ -13,7 +13,7 @@ fn main() {
     }).collect::<Vec<char>>();
 
     println!("Part 1: {}", find_marker_naive(&char_vec, 4).unwrap());
-    println!("Part 2: {}", find_marker_naive(&char_vec, 4).unwrap());
+    println!("Part 2: {}", find_marker_naive(&char_vec, 14).unwrap());
     println!();
     //Extra
     let input = std::fs::read_to_string("input/2022/day6_extra.txt").unwrap();
