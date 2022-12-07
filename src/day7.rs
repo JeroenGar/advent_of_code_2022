@@ -113,6 +113,7 @@ pub fn parse_dir_non_recursive(line_iter: &mut Iter<&str>, dirs: &mut Vec<usize>
             }
         } else { panic!("Unexpected command: {}", line.unwrap()); }
     }
+    //push all remaining dirs by folding the size_buffer in reverse
     size_buffer.iter().rev().fold(0, |acc, s| {
         dirs.push(acc + s);
         acc + s
