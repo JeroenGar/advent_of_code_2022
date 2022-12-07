@@ -4,7 +4,7 @@ use std::time::Instant;
 use itertools::rev;
 
 fn main() {
-    let input = std::fs::read_to_string("input/2022/day7.txt").unwrap();
+    let input = std::fs::read_to_string("input/2022/day7_extra.txt").unwrap();
     let lines = input.split('\n').collect::<Vec<&str>>();
     //----------------------------------------------------------------------------------------------
     println!("Non recursive:");
