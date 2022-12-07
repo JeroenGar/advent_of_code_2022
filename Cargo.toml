@@ -35,6 +35,14 @@ path = "src/day5_2.rs"
 name = "day6"
 path = "src/day6.rs"
 
+[[bin]]
+name = "day7"
+path = "src/day7.rs"
+
+[[bin]]
+name = "test"
+path = "src/test.rs"
+
 [dependencies]
 itertools = "0.10.5"
 rayon = "1.6.0"
