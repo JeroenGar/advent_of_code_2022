@@ -85,7 +85,6 @@ pub fn parse_dir_non_recursive(line_iter: &mut Iter<&str>, dirs: &mut Vec<usize>
             break;
         }
         let mut line_splitter = line.unwrap().split(' ');
-        let debug_line = *line.unwrap();
         let first_wrd = line_splitter.next().unwrap();
         if let Ok(file_size) = first_wrd.parse::<usize>() {
             size_buffer[current_depth] += file_size; //file detected
