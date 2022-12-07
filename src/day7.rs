@@ -5,7 +5,7 @@ use itertools::rev;
 
 fn main() {
     let input = std::fs::read_to_string("input/2022/day7_extra.txt").unwrap();
-    let lines = input.split('\n').collect::<Vec<&str>>();
+    let lines = input.lines().collect::<Vec<&str>>();
     //----------------------------------------------------------------------------------------------
     println!("Non recursive:");
     let start = std::time::Instant::now();
