@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-const INPUT: &str = include_str!("../input/2022/day8.txt");
+const INPUT: &str = include_str!("/Users/jern/Downloads/day8_2000x2000.txt");
 
 fn main() {
     let start = std::time::Instant::now();
@@ -42,7 +42,7 @@ impl TreeGrid {
         let (width, height) = (self.grid[0].len(), self.grid.len());
         let mut visibility_matrix = vec![vec![false; width]; height];
 
-        //resolve up visibility
+        //up
         for x in 0..width {
             let mut highest_visible = -1;
             for y in 0..height {
@@ -54,7 +54,7 @@ impl TreeGrid {
             }
         }
 
-        //resolve right visibility
+        //right
         for y in 0..height {
             let mut highest_visible = -1;
             for x in (0..width).rev() {
@@ -66,7 +66,7 @@ impl TreeGrid {
             }
         }
 
-        //resolve down visibility
+        //down
         for x in 0..width {
             let mut highest_visible = -1;
             for y in (0..height).rev() {
@@ -78,7 +78,7 @@ impl TreeGrid {
             }
         }
 
-        //resolve left visibility
+        //left
         for y in 0..height {
             let mut highest_visible = -1;
             for x in 0..width {
@@ -98,50 +98,50 @@ impl TreeGrid {
 
         let mut scenic_scores = vec![vec![1; width]; height];
 
-        //resolve up visibility
+        //up
         for x in 0..width {
-            let mut last_seen_buffer = [0;10];
+            let mut height_last_seen = [0;10];
             for y in 0..height {
                 let tree_height = self.grid[y][x] as usize;
-                scenic_scores[y][x] *= y - last_seen_buffer[tree_height];
+                scenic_scores[y][x] *= y - height_last_seen[tree_height];
                 for i in 0..=tree_height {
-                    last_seen_buffer[i] = y;
+                    height_last_seen[i] = y;
                 }
             }
         }
 
-        //resolve right visibility
+        //right
         for y in 0..height {
-            let mut last_seen_buffer = [width-1;10];
+            let mut height_last_seen = [width-1;10];
             for x in (0..width).rev() {
                 let tree_height = self.grid[y][x] as usize;
-                scenic_scores[y][x] *= last_seen_buffer[tree_height] - x;
+                scenic_scores[y][x] *= height_last_seen[tree_height] - x;
                 for i in 0..=tree_height {
-                    last_seen_buffer[i] = x;
+                    height_last_seen[i] = x;
                 }
             }
         }
 
-        //resolve down visibility
+        //down
         for x in 0..width {
-            let mut last_seen_buffer = [height-1;10];
+            let mut height_last_seen = [height-1;10];
             for y in (0..height).rev() {
                 let tree_height = self.grid[y][x] as usize;
-                scenic_scores[y][x] *= last_seen_buffer[tree_height] - y;
+                scenic_scores[y][x] *= height_last_seen[tree_height] - y;
                 for i in 0..=tree_height {
-                    last_seen_buffer[i] = y;
+                    height_last_seen[i] = y;
                 }
             }
         }
 
-        //resolve left visibility
+        //left
         for y in 0..height {
-            let mut last_seen_buffer = [0;10];
+            let mut height_last_seen = [0;10];
             for x in 0..width {
                 let tree_height = self.grid[y][x] as usize;
-                scenic_scores[y][x] *= x - last_seen_buffer[tree_height];
+                scenic_scores[y][x] *= x - height_last_seen[tree_height];
                 for i in 0..=tree_height {
-                    last_seen_buffer[i] = x;
+                    height_last_seen[i] = x;
                 }
             }
         }
