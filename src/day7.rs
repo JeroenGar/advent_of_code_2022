@@ -4,7 +4,8 @@ use std::time::Instant;
 use itertools::rev;
 
 fn main() {
-    let input = std::fs::read_to_string("input/2022/day7_extra.txt").unwrap();
+    //let input = std::fs::read_to_string("input/2022/day7_extra.txt").unwrap();
+    let input = std::fs::read_to_string("/Users/jern/Downloads/aoc_2022_day07_deep-2.txt").unwrap();
     let lines = input.lines().collect::<Vec<&str>>();
     //----------------------------------------------------------------------------------------------
     println!("Non recursive:");
@@ -22,7 +23,7 @@ fn main() {
     let part_2 = all_dirs.iter()
         .filter(|d| **d >= space_required)
         .min().unwrap();
-    println!("Time: {}μs", start.elapsed().as_micros());
+    println!("Time: {}ms", start.elapsed().as_millis());
     println!("Part 1: {}", part_1);
     println!("Part 2: {}", part_2);
 
@@ -95,15 +96,15 @@ pub fn parse_dir_non_recursive(line_iter: &mut Iter<&str>, dirs: &mut Vec<usize>
                 "cd" => match line_splitter.next().unwrap() {
                     ".." => {
                         //go back to parent dir
-                        current_depth -= 1;
                         let dir_size = size_buffer.pop().unwrap();
-                        size_buffer[current_depth] += dir_size;
+                        size_buffer[current_depth - 1] += dir_size;
                         dirs.push(dir_size);
+                        current_depth -= 1;
                     },
                     _ =>{
                         // go into dir
-                        current_depth += 1;
                         size_buffer.push(0);
+                        current_depth += 1;
                     }
                 }
                 "ls" => {
@@ -120,4 +121,3 @@ pub fn parse_dir_non_recursive(line_iter: &mut Iter<&str>, dirs: &mut Vec<usize>
     });
     dirs[dirs.len()-1]
 }
-
