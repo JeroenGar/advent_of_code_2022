@@ -44,48 +44,48 @@ impl TreeGrid {
 
         //resolve up visibility
         for x in 0..width {
-            let mut highest_visible = 0;
+            let mut highest_visible = -1;
             for y in 0..height {
                 let tree_height = self.grid[y][x];
-                if tree_height > highest_visible {
+                if tree_height as i32 > highest_visible {
                     visibility_matrix[y][x] = true;
-                    highest_visible = tree_height;
+                    highest_visible = tree_height as i32;
                 }
             }
         }
 
         //resolve right visibility
         for y in 0..height {
-            let mut highest_visible = 0;
+            let mut highest_visible = -1;
             for x in (0..width).rev() {
                 let tree_height = self.grid[y][x];
-                if tree_height > highest_visible {
+                if tree_height as i32 > highest_visible {
                     visibility_matrix[y][x] = true;
-                    highest_visible = tree_height;
+                    highest_visible = tree_height as i32;
                 }
             }
         }
 
         //resolve down visibility
         for x in 0..width {
-            let mut highest_visible = 0;
+            let mut highest_visible = -1;
             for y in (0..height).rev() {
                 let tree_height = self.grid[y][x];
-                if tree_height > highest_visible {
+                if tree_height as i32 > highest_visible {
                     visibility_matrix[y][x] = true;
-                    highest_visible = tree_height;
+                    highest_visible = tree_height as i32;
                 }
             }
         }
 
         //resolve left visibility
         for y in 0..height {
-            let mut highest_visible = 0;
+            let mut highest_visible = -1;
             for x in 0..width {
                 let tree_height = self.grid[y][x];
-                if tree_height > highest_visible {
+                if tree_height as i32 > highest_visible {
                     visibility_matrix[y][x] = true;
-                    highest_visible = tree_height;
+                    highest_visible = tree_height as i32;
                 }
             }
         }
