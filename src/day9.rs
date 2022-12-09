@@ -4,7 +4,7 @@ use std::time::Instant;
 use aoc2022::parse_to_vec;
 
 //const INPUT: &str = include_str!("../input/2022/day9.txt");
-const INPUT: &str = include_str!("/Users/jern/Downloads/aoc_2022_day09_large-2.in");
+const INPUT: &str = include_str!("/Users/jern/Downloads/aoc_2022_day09_large-1.in");
 
 fn main(){
     let start = Instant::now();
@@ -19,22 +19,25 @@ fn main(){
     println!("Time: {}ms", duration.as_millis());
 }
 
-fn simulate(rope: &mut Vec<RopeSegment>, head_actions: &Vec<Action>) -> (usize,usize) {
+fn simulate(rope: &mut [RopeSegment], head_actions: &Vec<Action>) -> (usize,usize) {
     let mut pos_1_set = HashSet::new();
     let mut pos_9_set = HashSet::new();
     for action in head_actions {
-        for _ in 0..action.dist{
+        for _ in 0..action.dist {
             pos_1_set.insert(rope[1].clone());
             pos_9_set.insert(rope[9].clone());
             let mut rope_iter = rope.iter_mut();
             let mut prev_segment = rope_iter.next().unwrap();
             prev_segment.move_in_dir(&action.dir);
-            for segment in rope_iter{
+            for segment in rope_iter {
                 segment.react(prev_segment);
                 prev_segment = segment;
             }
         }
     }
+    pos_1_set.insert(rope[1].clone());
+    pos_9_set.insert(rope[9].clone());
+
     (pos_1_set.len(),pos_9_set.len())
 }
 
