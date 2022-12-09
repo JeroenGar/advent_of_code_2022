@@ -18,16 +18,14 @@ fn simulate(rope: &mut Vec<RopeSegment>, head_actions: &Vec<Action>) -> usize {
     let mut tail_pos_set = HashSet::new();
     for action in head_actions {
         for _ in 0..action.dist{
-            {
-                let mut rope_iter = rope.iter_mut();
-                let mut prev_segment = rope_iter.next().unwrap();
-                prev_segment.move_in_dir(&action.dir);
-                for segment in rope_iter{
-                    segment.react(prev_segment);
-                    prev_segment = segment;
-                }
-            }
             tail_pos_set.insert(rope[rope.len()-1].pos());
+            let mut rope_iter = rope.iter_mut();
+            let mut prev_segment = rope_iter.next().unwrap();
+            prev_segment.move_in_dir(&action.dir);
+            for segment in rope_iter{
+                segment.react(prev_segment);
+                prev_segment = segment;
+            }
         }
     }
     tail_pos_set.len()
