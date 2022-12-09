@@ -7,7 +7,7 @@ const INPUT: &str = include_str!("../input/2022/day9.txt");
 
 fn main(){
     let start = Instant::now();
-    let head_actions  = parse_to_vec::<Action>(INPUT, "\n").unwrap();
+    let head_actions  = parse_to_vec(INPUT, "\n").unwrap();
     let mut rope = vec![RopeSegment(0,0); 10];
 
     let (part_1, part_2) = simulate(&mut rope, &head_actions);
@@ -18,7 +18,7 @@ fn main(){
     println!("Time: {}ms", duration.as_millis());
 }
 
-fn simulate(rope: &mut [RopeSegment], head_actions: &Vec<Action>) -> (usize,usize) {
+fn simulate(rope: &mut [RopeSegment], head_actions: &[Action]) -> (usize,usize) {
     let mut pos_1_set = HashSet::new();
     let mut pos_9_set = HashSet::new();
     for action in head_actions {
