@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-const INPUT: &str = include_str!("/Users/jern/Downloads/day8_2000x2000.txt");
+const INPUT: &str = include_str!("../input/2022/day8.txt");
 
 fn main() {
     let start = std::time::Instant::now();
@@ -100,7 +100,7 @@ impl TreeGrid {
 
         //up
         for x in 0..width {
-            let mut height_last_seen = [0;10];
+            let mut height_last_seen = [0; 10];
             for y in 0..height {
                 let tree_height = self.grid[y][x] as usize;
                 scenic_scores[y][x] *= y - height_last_seen[tree_height];
@@ -112,7 +112,7 @@ impl TreeGrid {
 
         //right
         for y in 0..height {
-            let mut height_last_seen = [width-1;10];
+            let mut height_last_seen = [width - 1; 10];
             for x in (0..width).rev() {
                 let tree_height = self.grid[y][x] as usize;
                 scenic_scores[y][x] *= height_last_seen[tree_height] - x;
@@ -124,7 +124,7 @@ impl TreeGrid {
 
         //down
         for x in 0..width {
-            let mut height_last_seen = [height-1;10];
+            let mut height_last_seen = [height - 1; 10];
             for y in (0..height).rev() {
                 let tree_height = self.grid[y][x] as usize;
                 scenic_scores[y][x] *= height_last_seen[tree_height] - y;
@@ -136,7 +136,7 @@ impl TreeGrid {
 
         //left
         for y in 0..height {
-            let mut height_last_seen = [0;10];
+            let mut height_last_seen = [0; 10];
             for x in 0..width {
                 let tree_height = self.grid[y][x] as usize;
                 scenic_scores[y][x] *= x - height_last_seen[tree_height];

@@ -1,11 +1,8 @@
-use std::iter::Rev;
 use std::slice::Iter;
 use std::time::Instant;
-use itertools::rev;
 
 fn main() {
-    //let input = std::fs::read_to_string("input/2022/day7_extra.txt").unwrap();
-    let input = std::fs::read_to_string("/Users/jern/Downloads/aoc_2022_day07_deep-2.txt").unwrap();
+    let input = std::fs::read_to_string("input/2022/day7_extra.txt").unwrap();
     let lines = input.lines().collect::<Vec<&str>>();
     //----------------------------------------------------------------------------------------------
     println!("Non recursive:");
@@ -75,7 +72,7 @@ pub fn parse_dir(line_iter: &mut Iter<&str>, dirs: &mut Vec<usize>) -> usize {
     total_file_size
 }
 
-pub fn parse_dir_non_recursive(line_iter: &mut Iter<&str>, dirs: &mut Vec<usize>) -> usize{
+pub fn parse_dir_non_recursive(line_iter: &mut Iter<&str>, dirs: &mut Vec<usize>) -> usize {
     line_iter.next(); //skip first line
     let mut size_buffer = vec![0_usize];
     let mut current_depth : usize = 0;
