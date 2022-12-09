@@ -1,24 +1,31 @@
 use std::collections::{HashSet};
 use std::str::FromStr;
+use std::time::Instant;
 use aoc2022::parse_to_vec;
 
-const INPUT: &str = include_str!("../input/2022/day9.txt");
+//const INPUT: &str = include_str!("../input/2022/day9.txt");
+const INPUT: &str = include_str!("/Users/jern/Downloads/aoc_2022_day09_large-2.in");
 
 fn main(){
+    let start = Instant::now();
     let head_actions  = parse_to_vec::<Action>(INPUT, "\n").unwrap();
-    let mut rope_1 = vec![RopeSegment(0,0); 2];
-    let mut rope_2 = vec![RopeSegment(0,0); 10];
+    let mut rope = vec![RopeSegment(0,0); 10];
 
-    println!("Part 1: {}", simulate(&mut rope_1, &head_actions));
-    println!("Part 2: {}", simulate(&mut rope_2, &head_actions));
+    let (part_1, part_2) = simulate(&mut rope, &head_actions);
+    let duration = start.elapsed();
 
+    println!("Part 1: {}", part_1);
+    println!("Part 2: {}", part_2);
+    println!("Time: {}ms", duration.as_millis());
 }
 
-fn simulate(rope: &mut Vec<RopeSegment>, head_actions: &Vec<Action>) -> usize {
-    let mut tail_pos_set = HashSet::new();
+fn simulate(rope: &mut Vec<RopeSegment>, head_actions: &Vec<Action>) -> (usize,usize) {
+    let mut pos_1_set = HashSet::new();
+    let mut pos_9_set = HashSet::new();
     for action in head_actions {
         for _ in 0..action.dist{
-            tail_pos_set.insert(rope[rope.len()-1].clone());
+            pos_1_set.insert(rope[1].clone());
+            pos_9_set.insert(rope[9].clone());
             let mut rope_iter = rope.iter_mut();
             let mut prev_segment = rope_iter.next().unwrap();
             prev_segment.move_in_dir(&action.dir);
@@ -28,7 +35,7 @@ fn simulate(rope: &mut Vec<RopeSegment>, head_actions: &Vec<Action>) -> usize {
             }
         }
     }
-    tail_pos_set.len()
+    (pos_1_set.len(),pos_9_set.len())
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
