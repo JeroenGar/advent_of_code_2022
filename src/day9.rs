@@ -3,8 +3,7 @@ use std::str::FromStr;
 use std::time::Instant;
 use aoc2022::parse_to_vec;
 
-//const INPUT: &str = include_str!("../input/2022/day9.txt");
-const INPUT: &str = include_str!("/Users/jern/Downloads/aoc_2022_day09_large-1.in");
+const INPUT: &str = include_str!("../input/2022/day9.txt");
 
 fn main(){
     let start = Instant::now();
