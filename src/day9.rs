@@ -23,8 +23,6 @@ fn simulate(rope: &mut [RopeSegment], head_actions: &[Action]) -> (usize,usize) 
     let mut pos_9_set = FxHashSet::default();
     for action in head_actions {
         for _ in 0..action.dist {
-            pos_1_set.insert(rope[1].clone());
-            pos_9_set.insert(rope[9].clone());
             let mut rope_iter = rope.iter_mut();
             let mut prev_segment = rope_iter.next().unwrap();
             prev_segment.move_in_dir(&action.dir);
@@ -32,11 +30,10 @@ fn simulate(rope: &mut [RopeSegment], head_actions: &[Action]) -> (usize,usize) 
                 segment.react(prev_segment);
                 prev_segment = segment;
             }
+            pos_1_set.insert(rope[1].clone());
+            pos_9_set.insert(rope[9].clone());
         }
     }
-    pos_1_set.insert(rope[1].clone());
-    pos_9_set.insert(rope[9].clone());
-
     (pos_1_set.len(),pos_9_set.len())
 }
 
@@ -53,12 +50,8 @@ impl RopeSegment {
         let (dx,dy) = ((prev.0 - self.0), (prev.1 - self.1));
         if dx.abs() > 1 || dy.abs() > 1 {
             //not (diagonally) adjacent or overlapping, segment needs to react
-            if dx.abs() > 0 {
-                self.0 += dx.signum();
-            }
-            if dy.abs() > 0 {
-                self.1 += dy.signum();
-            }
+            self.0 += dx.signum();
+            self.1 += dy.signum();
         }
     }
 }
