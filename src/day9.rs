@@ -1,6 +1,6 @@
-use std::collections::{HashSet};
 use std::str::FromStr;
 use std::time::Instant;
+use fxhash::FxHashSet;
 use aoc2022::parse_to_vec;
 
 const INPUT: &str = include_str!("../input/2022/day9.txt");
@@ -19,8 +19,8 @@ fn main(){
 }
 
 fn simulate(rope: &mut [RopeSegment], head_actions: &[Action]) -> (usize,usize) {
-    let mut pos_1_set = HashSet::new();
-    let mut pos_9_set = HashSet::new();
+    let mut pos_1_set = FxHashSet::default();
+    let mut pos_9_set = FxHashSet::default();
     for action in head_actions {
         for _ in 0..action.dist {
             pos_1_set.insert(rope[1].clone());

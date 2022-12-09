@@ -54,6 +54,7 @@ path = "src/test.rs"
 [dependencies]
 itertools = "0.10.5"
 rayon = "1.6.0"
+fxhash = "0.2.1"
 
 [profile.release]
 opt-level = 3
