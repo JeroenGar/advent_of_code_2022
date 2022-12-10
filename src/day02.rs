@@ -7,7 +7,7 @@ use std::str::FromStr;
 use aoc2022::{parse_to_vec};
 
 fn main() {
-    let input = fs::read_to_string(Path::new("input/2022/day2.txt")).expect("Could not read file");
+    let input = fs::read_to_string(Path::new("../input/2022/day02.txt")).expect("Could not read file");
 
     // Part 1
     let mut rounds: Vec<Round> = parse_to_vec(&input, "\n").unwrap();

@@ -6,7 +6,7 @@ use aoc2022::parse_to_vec;
 const N_HIGHEST_CALORIE_ELVES : u32 = 3;
 
 fn main(){
-    let input = fs::read_to_string(Path::new("input/2022/day1.txt")).expect("Could not read file");
+    let input = fs::read_to_string(Path::new("../input/2022/day01.txt")).expect("Could not read file");
     let mut elves : Vec<Elf> = parse_to_vec(&input, "\n\n").unwrap();
 
     println!("Part 1: {}", elves.iter().map(|e| e.cals).max().unwrap());

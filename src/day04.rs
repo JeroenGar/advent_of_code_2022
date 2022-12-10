@@ -3,7 +3,7 @@ use std::path::Path;
 use std::str::{FromStr, Split};
 
 pub fn main() {
-    let input = fs::read_to_string(Path::new("input/2022/day4.txt")).expect("Could not read file");
+    let input = fs::read_to_string(Path::new("../input/2022/day04.txt")).expect("Could not read file");
     let range_pairs: Vec<RangePair> = aoc2022::parse_to_vec(&input, "\n").unwrap();
 
     println!("Part 1: {}", range_pairs.iter().filter(|r| { r.inclusive() }).count());

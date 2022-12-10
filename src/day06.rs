@@ -6,7 +6,7 @@ use std::time::Instant;
 use itertools::Itertools;
 
 fn main() {
-    let input = std::fs::read_to_string("input/2022/day6.txt").unwrap();
+    let input = std::fs::read_to_string("../input/2022/day06.txt").unwrap();
     println!("{} chars", input.len());
     let char_vec = input.chars().filter(|c| {
         *c as u32 >= 32 && *c as u32 <= 126
@@ -16,7 +16,7 @@ fn main() {
     println!("Part 2: {}", find_marker_naive(&char_vec, 14).unwrap());
     println!();
     //Extra
-    let input = std::fs::read_to_string("input/2022/day6_extra.txt").unwrap();
+    let input = std::fs::read_to_string("../input/2022/day06_extra.txt").unwrap();
     println!("{} chars", input.len());
     let char_vec = input.chars().filter(|c| {
         *c as u32 >= 32 && *c as u32 <= 126

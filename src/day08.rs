@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-const INPUT: &str = include_str!("../input/2022/day8.txt");
+const INPUT: &str = include_str!("../input/2022/day08.txt");
 
 fn main() {
     let start = std::time::Instant::now();

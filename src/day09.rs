@@ -3,7 +3,7 @@ use std::time::Instant;
 use fxhash::FxHashSet;
 use aoc2022::parse_to_vec;
 
-const INPUT: &str = include_str!("../input/2022/day9.txt");
+const INPUT: &str = include_str!("../input/2022/day09.txt");
 
 fn main(){
     let start = Instant::now();

@@ -5,7 +5,7 @@ use itertools::Itertools;
 use aoc2022::parse_to_vec;
 
 fn main() {
-    let input = fs::read_to_string("input/2022/day3.txt").expect("Could not read file");
+    let input = fs::read_to_string("../input/2022/day03.txt").expect("Could not read file");
     let rucksacks: Vec<Rucksack> = parse_to_vec(&input, "\n").unwrap();
 
     let sum_misplaced_items = rucksacks.iter()

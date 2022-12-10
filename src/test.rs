@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 
 pub fn main() {
-    let (mut lines, mut sum) = (include_str!("../input/2022/day7.txt").lines().peekable(), 0);
+    let (mut lines, mut sum) = (include_str!("../input/2022/day07.txt").lines().peekable(), 0);
     let start = std::time::Instant::now();
     sh(&mut lines, &mut sum);
     println!("Time: {}μs", start.elapsed().as_micros());
