@@ -18,9 +18,9 @@ pub fn main() {
         |row| {
             for (pixel, &x) in row.iter().enumerate() {
                 if [x - 1, *x, x + 1].contains(&(pixel as i32)) {
-                    print!("#");
+                    print!("██");
                 } else {
-                    print!(" "); //easier to read than '.'
+                    print!("░░");
                 }
             }
             println!();
