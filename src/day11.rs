@@ -1,11 +1,13 @@
 use std::rc::Rc;
 use std::str::FromStr;
+use std::time::Instant;
 
 use aoc2022::parse_to_vec;
 
 const INPUT: &str = include_str!("../input/2022/day11.txt");
 
 fn main() {
+    let start = Instant::now();
     let mut monkeys_1: Vec<Monkey> = parse_to_vec(INPUT, "\n\n").unwrap();
     let mut monkeys_2 = monkeys_1.clone();
     let mut inspections_1 = vec![0; monkeys_1.len()];
@@ -33,12 +35,14 @@ fn main() {
     }
     inspections_2.sort_by(|a, b| b.cmp(a));
     println!("Part 2: {}", inspections_2[0] * inspections_2[1]);
+
+    println!("Time: {}ms", start.elapsed().as_millis());
 }
 
 #[derive(Clone)]
 struct Monkey {
     inventory: Vec<usize>,
-    op: Rc<dyn Fn(usize) -> usize>, //Rc instead of Box so when can clone the struct
+    worry_op: Rc<dyn Fn(usize) -> usize>, //Rc instead of Box so we can clone the struct
     throw_to: Rc<dyn Fn(usize) -> usize>,
     divided_by: usize,
 }
@@ -46,7 +50,7 @@ struct Monkey {
 impl Monkey {
     fn inspect_and_throw(&mut self, common_multiple: usize, divider: usize) -> Vec<(usize, usize)> {
         self.inventory.drain(..).map(|item|{
-            let new_item_value = ((self.op)(item) / divider) % common_multiple;
+            let new_item_value = ((self.worry_op)(item) / divider) % common_multiple;
             let throw_to = (self.throw_to)(new_item_value);
             (new_item_value, throw_to)
         }).collect()
@@ -95,7 +99,7 @@ impl FromStr for Monkey {
 
         Ok(Monkey {
             inventory,
-            op,
+            worry_op: op,
             throw_to,
             divided_by,
         })
