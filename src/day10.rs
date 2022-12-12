@@ -42,7 +42,7 @@ pub struct CPU {
 
 #[derive(Debug)]
 pub enum CPUState {
-    Executing(Op, usize)
+    Executing(Op, usize),
 }
 
 impl FromStr for Op {
