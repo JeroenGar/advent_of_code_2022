@@ -1,6 +1,5 @@
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
-use std::hash::Hash;
 use std::time::Instant;
 
 const INPUT: &str = include_str!("../input/2022/day12.txt");
@@ -10,87 +9,69 @@ fn main() {
     let char_matrix = INPUT.lines().map(|line| line.chars().collect::<Vec<char>>()).collect::<Vec<Vec<char>>>();
     let mut graph = Graph::new(&char_matrix);
     println!("Part 1: {}", graph.dijkstra());
-
-    //Add a virtual start node
-    let virtual_start = graph.nodes.len();
-    //Create edges from the start node to all nodes of height 0
-    let new_edges = graph.nodes.iter().enumerate()
+    //Add a virtual start node and edges to all possible start locations
+    let virtual_start = 0;
+    let virtual_edges = graph.node_heights.iter().enumerate()
         .filter(|(_, height)| **height == 0)
         .map(|(index, _)| index).collect::<Vec<usize>>();
-    graph.nodes.push(virtual_start);
-    graph.start = virtual_start;
-    graph.edges.push(new_edges);
-    println!("Part 2: {}", graph.dijkstra() - 1);
+    graph.start = graph.node_heights.len();
+    graph.node_heights.push(virtual_start);
+    graph.edges.push(virtual_edges);
+    println!("Part 2: {}", graph.dijkstra() - 1); // -1 to account for the virtual start node
     println!("Time: {}ms", start.elapsed().as_millis());
 }
 
 struct Graph {
     start: usize,
     end: usize,
-    nodes: Vec<usize>,
+    node_heights: Vec<usize>,
     edges: Vec<Vec<usize>>,
 }
 
 impl Graph {
     fn new(char_matrix: &Vec<Vec<char>>) -> Self {
-        let mut nodes: Vec<usize> = vec![];
+        let mut node_heights: Vec<usize> = vec![];
         let (mut start, mut end) = (0, 0);
-
         let grid_width = char_matrix[0].len();
         for row in char_matrix {
             for c in row {
                 let height = match c {
-                    'S' => {
-                        start = nodes.len();
-                        0
-                    }
-                    'E' => {
-                        end = nodes.len();
-                        25
-                    }
-                    c => {
-                        *c as usize - 'a' as usize
-                    }
+                    'S' => 0,
+                    'E' => 25,
+                    c => *c as usize - 'a' as usize
                 };
-                nodes.push(height);
+                match c {
+                    'S' => start = node_heights.len(),
+                    'E' => end = node_heights.len(),
+                    _ => {}
+                }
+                node_heights.push(height);
             }
         }
-        let mut edges: Vec<Vec<usize>> = vec![vec![]; nodes.len()];
-        for i in 0..nodes.len() {
-            //left
+        let edges: Vec<Vec<usize>> = (0..node_heights.len()).map(|i| {
+            let mut neighbors = vec![];
             if i % grid_width != 0 {
-                let left = i - 1;
-                if nodes[i] + 1 >= nodes[left] {
-                    edges[i].push(left);
-                }
+                neighbors.push(i - 1); //left
             }
-            //right
             if i % grid_width != grid_width - 1 {
-                let right = i + 1;
-                if nodes[i] + 1 >= nodes[right] {
-                    edges[i].push(right);
-                }
+                neighbors.push(i + 1); //right
             }
-            //up
             if i >= grid_width {
-                let up = i - grid_width;
-                if nodes[i] + 1 >= nodes[up] {
-                    edges[i].push(up);
-                }
+                neighbors.push(i - grid_width);  //up
             }
-            //down
-            if i < nodes.len() - grid_width {
-                let down = i + grid_width;
-                if nodes[i] + 1 >= nodes[down] {
-                    edges[i].push(down);
-                }
+            if i < node_heights.len() - grid_width {
+                neighbors.push(i + grid_width); //down
             }
-        }
-        Graph { start, end, nodes, edges }
+            neighbors.into_iter()
+                .filter(|&n| node_heights[i] + 1 >= node_heights[n]) //reachable
+                .collect()
+        }).collect();
+
+        Graph { start, end, node_heights, edges }
     }
 
     fn dijkstra(&self) -> usize {
-        let mut distances = vec![usize::MAX; self.nodes.len()];
+        let mut distances = vec![usize::MAX; self.node_heights.len()];
         distances[self.start] = 0;
         let mut queue = BinaryHeap::new();
         queue.push(Reverse((0, self.start))); //Reverse to make it a min heap
