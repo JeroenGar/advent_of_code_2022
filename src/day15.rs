@@ -38,13 +38,13 @@ fn main() {
         let (bbox_w, bbox_h) = (bbox.1 - bbox.0, bbox.3 - bbox.2);
         let bbox_center = ((bbox.0 + bbox.1) / 2, (bbox.2 + bbox.3) / 2);
 
-        //filter sensors have no coverage in the bounding box
+        //Sensors without any coverage inside the bbox are not relevant
         let relevant_sensors = sensors.iter()
-            .filter(|s| s.r + bbox_w + bbox_h >= (s.x - bbox_center.0).abs() + (s.y - bbox_center.1).abs())
+            .filter(|s| s.r + bbox_w/2 + bbox_h/2 >= (s.x - bbox_center.0).abs() + (s.y - bbox_center.1).abs())
             .collect::<Vec<&Sensor>>();
 
         //Since there is only a single possible place for the distress beacon,
-        //its distance must be r+1 from at least 2 sensors, only take into account these points
+        //its distance must be exactly r+1 from at least 2 sensors, only take into account these points
         let loc = relevant_sensors.iter()
             .flat_map(|s| s.lines_at_distance(s.r + 1))
             .combinations(2)
@@ -87,9 +87,6 @@ impl Sensor {
             r if r < 0 => None,
             r => Some(self.x + r),
         }
-    }
-    fn coords_with_distance(&self, d: i32) -> Vec<(i32, i32)> {
-        (self.x - d..=self.x + d).map(|x| (x, self.y - (d - (x - self.x).abs()))).collect()
     }
     fn lines_at_distance(&self, d: i32) -> [((i32,i32),(i32,i32));4]{
         let x = self.x;
