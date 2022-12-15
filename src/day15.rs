@@ -47,6 +47,7 @@ fn main() {
         //its distance must be exactly r+1 from at least 2 sensors, only take into account these points
         let loc = relevant_sensors.iter()
             .flat_map(|s| s.lines_at_distance(s.r + 1))
+            .chain([((bbox.0,bbox.2),(bbox.1,bbox.2)), ((bbox.1,bbox.2),(bbox.1,bbox.3)), ((bbox.1,bbox.3),(bbox.0,bbox.3)), ((bbox.0,bbox.3),(bbox.0,bbox.2))].into_iter())
             .combinations(2)
             .filter_map(|lines| intersection(lines[0], lines[1]))
             .filter(|(x, y)| (bbox.0..=bbox.1).contains(x) && (bbox.2..=bbox.3).contains(y))
