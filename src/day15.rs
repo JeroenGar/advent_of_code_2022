@@ -1,5 +1,7 @@
+use std::ops::RangeInclusive;
 use std::str::FromStr;
 use std::time::Instant;
+use itertools::Itertools;
 
 use aoc2022::parse_to_vec;
 
@@ -9,49 +11,77 @@ fn main() {
     let start = Instant::now();
     let sensors: Vec<Sensor> = parse_to_vec(INPUT, "\n").unwrap();
 
-    let row = 2000000;
+    let part1 = {
+        let row = 2000000;
+        //Each sensor has a (or no) range of blocked locations on this row
+        let ranges = sensors.iter()
+            .filter_map(|s| match s.y_in_range(row) {
+                true => Some(s.min_x_in_range(row).unwrap()..=s.max_x_in_range(row).unwrap()),
+                false => None,
+            }).collect::<Vec<RangeInclusive<i32>>>();
+        //merge overlapping ranges
+        let merged_ranges = merge_overlapping(&ranges);
+        //count elements in the ranges and subtract the number of known beacons inside the ranges
+        let n_in_range = merged_ranges.iter().map(|r| r.end() - r.start() + 1).sum::<i32>();
 
-    let min_x_in_range = sensors.iter()
-        .filter_map(|s| s.min_x_in_range(row))
-        .min().unwrap();
-
-    let max_x_in_range = sensors.iter()
-        .filter_map(|s| s.max_x_in_range(row))
-        .max().unwrap();
-
-    let relevant_sensors = sensors.iter().filter(|s| s.min_x_in_range(row).is_some()).collect::<Vec<&Sensor>>();
-    let beacons_on_row = sensors.iter().filter(|s| s.b_y == row).map(|s| s.b_x).collect::<Vec<i32>>();
-
-    let part1 = (min_x_in_range..=max_x_in_range)
-        .filter(|x| relevant_sensors.iter()
-            .any(|s| s.in_range(*x, row)))
-        .filter(|x| !beacons_on_row.contains(x))
-        .count();
+        let beacons_on_row = sensors.iter().filter(|s| s.b_y == row).map(|s| s.b_x).unique().collect::<Vec<i32>>();
+        let n_beacons_in_range = beacons_on_row.iter().filter(|x| merged_ranges.iter().any(|r| r.contains(x))).count() as i32;
+        n_in_range - n_beacons_in_range
+    };
 
     println!("Part 1: {}", part1);
 
-    let range = 4000000;
-    let (c_x,c_y) = (range/2, range/2);
+    let part2 = {
+        let range = 4000000;
+        let (c_x,c_y) = (range/2, range/2);
 
-    let relevant_sensors = sensors.iter()
-        .filter(|s| s.r + range >= (s.x - c_x).abs() + (s.y - c_y).abs())
-        .collect::<Vec<&Sensor>>();
+        //filter sensors that are out of range
+        let relevant_sensors = sensors.iter()
+            .filter(|s| s.r + range >= (s.x - c_x).abs() + (s.y - c_y).abs())
+            .collect::<Vec<&Sensor>>();
 
-    //Since there is only a single place for the distress beacon,
-    //its distance must be r+1 from some sensor, only take into account these points
-    let loc = relevant_sensors.iter()
-        .flat_map(|s| s.coords_with_distance(s.r + 1))
-        .filter(|(x, y)| (0..=range).contains(x) && (0..=range).contains(y))
-        .find(|(x, y)| relevant_sensors.iter().all(|s| !s.in_range(*x, *y)))
-        .unwrap();
+        //Since there is only a single place for the distress beacon,
+        //its distance must be r+1 from some sensor, only take into account these points
+        let loc = relevant_sensors.iter()
+            .flat_map(|s| s.coords_with_distance(s.r + 1))
+            .filter(|(x, y)| (0..=range).contains(x) && (0..=range).contains(y))
+            .find(|(x, y)| relevant_sensors.iter().all(|s| !s.in_range(*x, *y)))
+            .unwrap();
 
-    println!("Part 2: {}", loc.0 as usize * range as usize + loc.1 as usize);
-    println!("Time: {}ms", start.elapsed().as_millis());
+        loc.0 as usize * range as usize + loc.1 as usize
+    };
+
+    println!("Part 2: {}", part2);
+    println!("Time: {}us", start.elapsed().as_micros());
 }
 
 #[derive(Debug, Clone)]
 struct Sensor {
     x: i32, y: i32, r: i32, b_x: i32, b_y: i32,
+}
+
+impl Sensor {
+    fn in_range(&self, x: i32, y: i32) -> bool {
+        (self.x - x).abs() + (self.y - y).abs() <= self.r
+    }
+    fn y_in_range(&self, y: i32) -> bool {
+        (self.y - y).abs() <= self.r
+    }
+    fn min_x_in_range(&self, y: i32) -> Option<i32> {
+        match self.r - (self.y - y).abs() {
+            r if r < 0 => None,
+            r => Some(self.x - r),
+        }
+    }
+    fn max_x_in_range(&self, y: i32) -> Option<i32> {
+        match self.r - (self.y - y).abs() {
+            r if r < 0 => None,
+            r => Some(self.x + r),
+        }
+    }
+    fn coords_with_distance(&self, d: i32) -> Vec<(i32, i32)> {
+        (self.x - d..=self.x + d).map(|x| (x, self.y - (d - (x - self.x).abs()))).collect()
+    }
 }
 
 impl FromStr for Sensor {
@@ -69,23 +99,24 @@ impl FromStr for Sensor {
     }
 }
 
-impl Sensor {
-    fn in_range(&self, x: i32, y: i32) -> bool {
-        (self.x - x).abs() + (self.y - y).abs() <= self.r
-    }
-    fn min_x_in_range(&self, y: i32) -> Option<i32> {
-        match self.r - (self.y - y).abs() {
-            r if r < 0 => None,
-            r => Some(self.x - r),
+fn merge_overlapping(ranges: &[RangeInclusive<i32>]) -> Vec<RangeInclusive<i32>> {
+    let mut result = Vec::from(ranges);
+    let overlap = |r1: &RangeInclusive<i32>, r2: &RangeInclusive<i32>| { r1.start().max(r2.start()) <= r1.end().min(r2.end()) };
+
+    let mut overlap_detected = true;
+
+    'overlap: while overlap_detected {
+        overlap_detected = false;
+        for i in 0..result.len() {
+            for j in i + 1..result.len() {
+                if overlap(&result[i], &result[j]) {
+                    result[i] = *result[i].start().min(result[j].start())..=*result[i].end().max(result[j].end());
+                    result.remove(j);
+                    overlap_detected = true;
+                    continue 'overlap;
+                }
+            }
         }
     }
-    fn max_x_in_range(&self, y: i32) -> Option<i32> {
-        match self.r - (self.y - y).abs() {
-            r if r < 0 => None,
-            r => Some(self.x + r),
-        }
-    }
-    fn coords_with_distance(&self, d: i32) -> Vec<(i32, i32)> {
-        (self.x - d..=self.x + d).map(|x| (x, self.y - (d - (x - self.x).abs()))).collect()
-    }
+    result
 }
