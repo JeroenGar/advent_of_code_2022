@@ -107,23 +107,20 @@ impl FromStr for Sensor {
 }
 
 fn merge_overlapping(ranges: &[RangeInclusive<i32>]) -> Vec<RangeInclusive<i32>> {
-    let mut result = Vec::from(ranges);
+    let mut merged = Vec::from(ranges);
     let overlap = |r1: &RangeInclusive<i32>, r2: &RangeInclusive<i32>| { r1.start().max(r2.start()) <= r1.end().min(r2.end()) };
 
-    let mut overlap_detected = true;
-
-    'overlap: while overlap_detected {
-        overlap_detected = false;
-        for i in 0..result.len() {
-            for j in i + 1..result.len() {
-                if overlap(&result[i], &result[j]) {
-                    result[i] = *result[i].start().min(result[j].start())..=*result[i].end().max(result[j].end());
-                    result.remove(j);
-                    overlap_detected = true;
+    'overlap: loop {
+        for i in 0..merged.len() {
+            for j in i + 1..merged.len() {
+                if overlap(&merged[i], &merged[j]) {
+                    merged[i] = *merged[i].start().min(merged[j].start())..=*merged[i].end().max(merged[j].end());
+                    merged.remove(j);
                     continue 'overlap;
                 }
             }
         }
+        break; //no more overlaps
     }
-    result
+    merged
 }
