@@ -1,6 +1,7 @@
 use std::ops::RangeInclusive;
 use std::str::FromStr;
 use std::time::Instant;
+
 use itertools::Itertools;
 
 use aoc2022::parse_to_vec;
@@ -12,8 +13,8 @@ fn main() {
     let sensors: Vec<Sensor> = parse_to_vec(INPUT, "\n").unwrap();
 
     let part1 = {
-        let row = 2000000;
-        //Each sensor has a (or no) range of blocked locations on this row
+        let row = 2_000_000;
+        //Each sensor has at most 1 range of impossible locations on a row
         let ranges = sensors.iter()
             .filter_map(|s| match s.y_in_range(row) {
                 true => Some(s.min_x_in_range(row).unwrap()..=s.max_x_in_range(row).unwrap()),
@@ -21,34 +22,36 @@ fn main() {
             }).collect::<Vec<RangeInclusive<i32>>>();
         //merge overlapping ranges
         let merged_ranges = merge_overlapping(&ranges);
-        //count elements in the ranges and subtract the number of known beacons inside the ranges
+        //count elements in the ranges
         let n_in_range = merged_ranges.iter().map(|r| r.end() - r.start() + 1).sum::<i32>();
-
+        //already known beacons on this row do not count towards the total, subtract them
         let beacons_on_row = sensors.iter().filter(|s| s.b_y == row).map(|s| s.b_x).unique().collect::<Vec<i32>>();
         let n_beacons_in_range = beacons_on_row.iter().filter(|x| merged_ranges.iter().any(|r| r.contains(x))).count() as i32;
+
         n_in_range - n_beacons_in_range
     };
 
     println!("Part 1: {}", part1);
 
     let part2 = {
-        let range = 4000000;
-        let (c_x,c_y) = (range/2, range/2);
+        let bbox = (0, 4_000_000, 0, 4_000_000);
+        let (bbox_w, bbox_h) = (bbox.1 - bbox.0, bbox.3 - bbox.2);
+        let bbox_center = ((bbox.0 + bbox.1) / 2, (bbox.2 + bbox.3) / 2);
 
-        //filter sensors that are out of range
+        //filter sensors have no coverage in the bounding box
         let relevant_sensors = sensors.iter()
-            .filter(|s| s.r + range >= (s.x - c_x).abs() + (s.y - c_y).abs())
+            .filter(|s| s.r + bbox_w + bbox_h >= (s.x - bbox_center.0).abs() + (s.y - bbox_center.1).abs())
             .collect::<Vec<&Sensor>>();
 
-        //Since there is only a single place for the distress beacon,
+        //Since there is only a single possible place for the distress beacon,
         //its distance must be r+1 from some sensor, only take into account these points
         let loc = relevant_sensors.iter()
             .flat_map(|s| s.coords_with_distance(s.r + 1))
-            .filter(|(x, y)| (0..=range).contains(x) && (0..=range).contains(y))
+            .filter(|(x, y)| (bbox.0..=bbox.1).contains(x) && (bbox.2..=bbox.3).contains(y))
             .find(|(x, y)| relevant_sensors.iter().all(|s| !s.in_range(*x, *y)))
             .unwrap();
 
-        loc.0 as usize * range as usize + loc.1 as usize
+        loc.0 as usize * bbox_w as usize + loc.1 as usize
     };
 
     println!("Part 2: {}", part2);
@@ -57,7 +60,11 @@ fn main() {
 
 #[derive(Debug, Clone)]
 struct Sensor {
-    x: i32, y: i32, r: i32, b_x: i32, b_y: i32,
+    x: i32,
+    y: i32,
+    r: i32,
+    b_x: i32,
+    b_y: i32,
 }
 
 impl Sensor {
