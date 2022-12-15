@@ -44,9 +44,11 @@ fn main() {
             .collect::<Vec<&Sensor>>();
 
         //Since there is only a single possible place for the distress beacon,
-        //its distance must be r+1 from some sensor, only take into account these points
+        //its distance must be r+1 from at least 2 sensors, only take into account these points
         let loc = relevant_sensors.iter()
-            .flat_map(|s| s.coords_with_distance(s.r + 1))
+            .flat_map(|s| s.lines_at_distance(s.r + 1))
+            .combinations(2)
+            .filter_map(|lines| intersection(lines[0], lines[1]))
             .filter(|(x, y)| (bbox.0..=bbox.1).contains(x) && (bbox.2..=bbox.3).contains(y))
             .find(|(x, y)| relevant_sensors.iter().all(|s| !s.in_range(*x, *y)))
             .unwrap();
@@ -89,6 +91,16 @@ impl Sensor {
     fn coords_with_distance(&self, d: i32) -> Vec<(i32, i32)> {
         (self.x - d..=self.x + d).map(|x| (x, self.y - (d - (x - self.x).abs()))).collect()
     }
+    fn lines_at_distance(&self, d: i32) -> [((i32,i32),(i32,i32));4]{
+        let x = self.x;
+        let y = self.y;
+        [
+            ((x, y+d), (x+d, y)), //ne
+            ((x+d, y), (x, y-d)), //se
+            ((x, y-d), (x-d, y)), //sw
+            ((x-d, y), (x, y+d)), //nw
+        ]
+    }
 }
 
 impl FromStr for Sensor {
@@ -123,4 +135,21 @@ fn merge_overlapping(ranges: &[RangeInclusive<i32>]) -> Vec<RangeInclusive<i32>>
         break; //no more overlaps
     }
     merged
+}
+
+fn intersection(l1: ((i32,i32),(i32,i32)), l2: ((i32,i32),(i32,i32))) -> Option<(i32,i32)>{
+    //find the intersection of two 45 degree lines
+    let (x1, y1) = (l1.0.0 as i128, l1.0.1 as i128);
+    let (x2, y2) = (l1.1.0 as i128, l1.1.1 as i128);
+    let (x3, y3) = (l2.0.0 as i128, l2.0.1 as i128);
+    let (x4, y4) = (l2.1.0 as i128, l2.1.1 as i128);
+
+    let d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+    if d == 0 { return None; }
+
+    let x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d;
+    let y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d;
+
+    Some((x as i32, y as i32))
 }
