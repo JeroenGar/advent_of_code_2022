@@ -17,13 +17,13 @@ fn main() {
     let part_1 = {
         let mut shaft = Shaft::new(&rock_types, &gas_pattern);
         shaft.simulate(2022);
-        shaft.height()
+        shaft.rock_height()
     };
 
     println!("Part 1: {}", part_1);
 
     let part_2 = {
-        //search for a two iterations where the shaft and rocks/gas pattern are in the same state
+        //Search for a two iterations where the shaft and rocks/gas pattern are in the same state
         let ((cycle_start, height_start), (cycle_end, height_end)) = {
             let mut shaft = Shaft::new(&rock_types, &gas_pattern);
             let mut state_map= HashMap::new();
@@ -31,12 +31,13 @@ fn main() {
             let mut cycle = None;
             for i in 0..1_000_000_000_000 {
                 shaft.simulate(1);
-                let state = (shaft.minimal_shape(), shaft.gas_index, shaft.rock_index);
+                let minimal_shape = shaft.minimal_shape(); //Use the 'minimal' shape to represent the state
+                let state = (minimal_shape, shaft.gas_index, shaft.rock_index);
                 if state_map.contains_key(&state) {
-                    cycle = Some((state_map[&state], (i, shaft.height())));
+                    cycle = Some((state_map[&state], (i, shaft.rock_height())));
                     break;
                 }
-                state_map.insert(state, (i, shaft.height()));
+                state_map.insert(state, (i, shaft.rock_height()));
             }
             cycle.unwrap()
         };
@@ -50,7 +51,7 @@ fn main() {
         let remaining_height = {
             let mut shaft = Shaft::new(&rock_types, &gas_pattern);
             shaft.simulate(cycle_end + remainder);
-            shaft.height() - height_end
+            shaft.rock_height() - height_end
         };
         //Add all of them up to get the total height
         height_start + (height_end - height_start) * n_cycles + remaining_height
@@ -156,7 +157,7 @@ impl<'a> Shaft<'a> {
                             }
                         }
                     }
-                    Mode::Stuck => { //Rock has hit something, and is now stuck. Add it to the shaft
+                    Mode::Stuck => { //Rock has hit something, and is now stuck.
                         rock_type.shape.iter()
                             .map(|(x, y)| (pos.0 + *x as usize, pos.1 + *y as usize))
                             .for_each(|(x, y)| {
@@ -195,7 +196,7 @@ impl<'a> Shaft<'a> {
         (cutoff_index..self.shape.len()).map(|i| self.shape[i]).collect()
     }
 
-    pub fn height(&self) -> usize {
+    pub fn rock_height(&self) -> usize {
         self.shape.len()
     }
 }
