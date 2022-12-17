@@ -23,15 +23,15 @@ fn main() {
     println!("Part 1: {}", part_1);
 
     let part_2 = {
-        //Search for a two iterations where the shaft and rocks/gas pattern are in the same state
+        //Search a cycle: two separate iterations where the shaft, rocks and gas patterns are in the same state
         let ((cycle_start, height_start), (cycle_end, height_end)) = {
             let mut shaft = Shaft::new(&rock_types, &gas_pattern);
-            let mut state_map= HashMap::new();
+            let mut state_map = HashMap::new();
 
             let mut cycle = None;
             for i in 0..1_000_000_000_000 {
                 shaft.simulate(1);
-                let minimal_shape = shaft.minimal_shape(); //Use the 'minimal' shape to represent the state
+                let minimal_shape = shaft.minimal_shape(); //Use the 'minimal' shape instead of entire shape in the state
                 let state = (minimal_shape, shaft.gas_index, shaft.rock_index);
                 if state_map.contains_key(&state) {
                     cycle = Some((state_map[&state], (i, shaft.rock_height())));
@@ -61,30 +61,9 @@ fn main() {
     println!("Time: {:?}", start.elapsed());
 }
 
-struct RockType {
-    pub shape: Vec<(u8, u8)>,
-    pub width: u8,
-}
-
-impl FromStr for RockType {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut shape = Vec::new();
-        for (y, line) in s.lines().rev().enumerate() {
-            for (x, c) in line.chars().enumerate() {
-                if c == '#' {
-                    shape.push((x as u8, y as u8));
-                }
-            }
-        }
-        let width = shape.iter().map(|(x, _)| x).max().unwrap() + 1;
-        Ok(RockType { shape, width })
-    }
-}
-
 struct Shaft<'a> {
     pub shape: Vec<[bool; SHAFT_WIDTH]>,
-    pub rock_types : &'a Vec<RockType>,
+    pub rock_types: &'a Vec<RockType>,
     pub rock_index: usize,
     pub gas_pattern: &'a Vec<char>,
     pub gas_index: usize,
@@ -102,7 +81,7 @@ impl<'a> Shaft<'a> {
     }
 
     pub fn simulate(&mut self, n_rocks: usize) {
-        enum Mode { Falling, Gas, Stuck}
+        enum Mode { Falling, Gas, Stuck }
 
         for _ in 0..n_rocks {
             let rock_type = &self.rock_types[self.rock_index];
@@ -115,17 +94,13 @@ impl<'a> Shaft<'a> {
                         let gas = &self.gas_pattern[self.gas_index];
                         self.gas_index = (self.gas_index + 1) % self.gas_pattern.len();
                         let new_pos = match gas {
-                            '>' => {
-                                match SHAFT_WIDTH > pos.0 + rock_type.width as usize {
-                                    true => (pos.0 + 1, pos.1),
-                                    false => (pos.0, pos.1) //Rock is against the right wall
-                                }
+                            '>' => match SHAFT_WIDTH > pos.0 + rock_type.width as usize {
+                                true => (pos.0 + 1, pos.1),
+                                false => (pos.0, pos.1) //Rock is against the right wall
                             }
-                            '<' => {
-                                match pos.0 > 0 {
-                                    true => (pos.0 - 1, pos.1),
-                                    false => (pos.0, pos.1) //Rock is against the left wall
-                                }
+                            '<' => match pos.0 > 0 {
+                                true => (pos.0 - 1, pos.1),
+                                false => (pos.0, pos.1) //Rock is against the left wall
                             }
                             _ => { panic!("Invalid gas character: {}", gas) }
                         };
@@ -135,29 +110,23 @@ impl<'a> Shaft<'a> {
                         };
                         Mode::Falling
                     }
-                    Mode::Falling => {
-                        match pos.1 == 0 {
-                            true => Mode::Stuck, //Bottom of shaft reached
-                            false => {
-                                match pos.1 < self.shape.len() + 1 {
-                                    true => { //The rock is in range of other rocks, watch out for collisions
-                                        match self.rock_collides(rock_type, (pos.0, pos.1 - 1)) {
-                                            true => Mode::Stuck,
-                                            false => {
-                                                pos.1 -= 1;
-                                                Mode::Gas
-                                            }
-                                        }
-                                    }
-                                    false => { //The rock is not in range of other rocks, so just fall
-                                        pos.1 -= 1;
-                                        Mode::Gas
-                                    }
+                    Mode::Falling => match pos.1 == 0 {
+                        true => Mode::Stuck, //Bottom of shaft reached
+                        false => match pos.1 < self.shape.len() + 1 {
+                            true => match self.rock_collides(rock_type, (pos.0, pos.1 - 1)) { //Rock is in range of other rocks, watch out for collisions
+                                true => Mode::Stuck,
+                                false => {
+                                    pos.1 -= 1;
+                                    Mode::Gas
                                 }
+                            }
+                            false => { //Rock is not in range of other rocks, so just fall
+                                pos.1 -= 1;
+                                Mode::Gas
                             }
                         }
                     }
-                    Mode::Stuck => { //Rock has hit something, and is now stuck.
+                    Mode::Stuck => { //Add rock shape to shaft shape
                         rock_type.shape.iter()
                             .map(|(x, y)| (pos.0 + *x as usize, pos.1 + *y as usize))
                             .for_each(|(x, y)| {
@@ -179,7 +148,7 @@ impl<'a> Shaft<'a> {
             .any(|(x, y)| self.shape.get(y).unwrap_or(&[false; SHAFT_WIDTH])[x])
     }
 
-    pub fn minimal_shape(&self) -> Vec<[bool; SHAFT_WIDTH]>{
+    pub fn minimal_shape(&self) -> Vec<[bool; SHAFT_WIDTH]> {
         //Only the rows from the top until the row which is fully in the 'shadow' of rocks above are relevant
         let mut sunlight_reach = [true; SHAFT_WIDTH];
         let mut cutoff_index = 0;
@@ -198,5 +167,26 @@ impl<'a> Shaft<'a> {
 
     pub fn rock_height(&self) -> usize {
         self.shape.len()
+    }
+}
+
+struct RockType {
+    pub shape: Vec<(u8, u8)>,
+    pub width: u8,
+}
+
+impl FromStr for RockType {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut shape = Vec::new();
+        for (y, line) in s.lines().rev().enumerate() {
+            for (x, c) in line.chars().enumerate() {
+                if c == '#' {
+                    shape.push((x as u8, y as u8));
+                }
+            }
+        }
+        let width = shape.iter().map(|(x, _)| x).max().unwrap() + 1;
+        Ok(RockType { shape, width })
     }
 }
