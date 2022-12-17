@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use itertools::Itertools;
+use fxhash::FxHashMap;
 
 use aoc2022::parse_to_vec;
 
@@ -26,7 +27,7 @@ fn main() {
         //Search a cycle: two separate iterations where the shaft, rocks and gas patterns are in the same state
         let ((cycle_start, height_start), (cycle_end, height_end)) = {
             let mut shaft = Shaft::new(&rock_types, &gas_pattern);
-            let mut state_map = HashMap::new();
+            let mut state_map = FxHashMap::default();
 
             let mut cycle = None;
             for i in 0..1_000_000_000_000 {
