@@ -72,7 +72,7 @@ impl FromStr for Blueprint {
 impl Blueprint {
 
     fn simulate(&self, start_state: SimState) -> u32 {
-        //BFS, with pruning of already seen combinations of robots and resources
+        //DFS, with pruning of already seen combinations of robots and resources
         let mut seen_states = FxHashMap::default();
         let mut states_stack = Vec::new();
         let mut max_geodes = 0;
