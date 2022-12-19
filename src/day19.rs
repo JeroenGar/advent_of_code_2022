@@ -1,8 +1,7 @@
-use std::collections::VecDeque;
 use std::str::FromStr;
 use std::time::Instant;
 
-use fxhash::FxHashSet;
+use fxhash::{FxHashMap};
 use itertools::{Itertools, izip};
 
 use aoc2022::parse_to_vec;
@@ -73,23 +72,33 @@ impl FromStr for Blueprint {
 impl Blueprint {
 
     fn simulate(&self, start_state: SimState) -> u32 {
-        // BFS, with pruning of already seen combinations of robots and resources
-        let mut seen_states = FxHashSet::default();
-        let mut states_to_check = VecDeque::new();
+        //BFS, with pruning of already seen combinations of robots and resources
+        let mut seen_states = FxHashMap::default();
+        let mut states_stack = Vec::new();
         let mut max_geodes = 0;
-        states_to_check.push_back(start_state);
+        states_stack.push(start_state);
 
-        while let Some(state) = states_to_check.pop_front() {
+        while let Some(state) = states_stack.pop() {
             match state.time {
                 0 => max_geodes = max_geodes.max(state.resources[3]),
                 _ => {
-                    self.get_next_states(&state).into_iter().flatten()
+                    self.get_next_states(&state).into_iter()
                         .for_each(|next_state| {
-                            if self.upperbound_geodes(&next_state) > max_geodes &&
-                                !seen_states.contains(&(next_state.bots, next_state.resources)) {
-                                //Only if we haven't seen this state before (earlier in time)
-                                seen_states.insert((next_state.bots, next_state.resources));
-                                states_to_check.push_back(next_state);
+                            if self.upperbound_geodes(&next_state) > max_geodes {
+                                match seen_states.get(&(next_state.bots, next_state.resources)){
+                                    Some(&seen_time) => {
+                                        if seen_time < next_state.time {
+                                            //If we've seen this combination before, but with less time left, add it to the stack
+                                            seen_states.insert((next_state.bots, next_state.resources), next_state.time);
+                                            states_stack.push(next_state);
+                                        }
+                                    },
+                                    None => {
+                                        //If this combination is unseen, add it to the stack
+                                        seen_states.insert((next_state.bots, next_state.resources), next_state.time);
+                                        states_stack.push(next_state);
+                                    }
+                                }
                             }
                         });
                 }
@@ -98,10 +107,10 @@ impl Blueprint {
         max_geodes
     }
 
-    fn get_next_states(&self, state: &SimState) -> [Option<SimState>; 5] {
-        let mut next_states = [None; 5];
+    fn get_next_states(&self, state: &SimState) -> Vec<SimState> {
+        let mut next_states = vec![];
 
-        for i in (0..4).rev() {
+        for i in (0..4).rev() { //reverse order, so the most advanced machines come first
             if i != 3 && state.bots[i] == self.prices.iter().map(|p| p[i]).max().unwrap() {
                 //Since we can only build one machine every iteration,
                 // we don't need more production of a resource than the most expensive machine requires
@@ -124,7 +133,7 @@ impl Blueprint {
                     }
                     next_resources
                 };
-                next_states[i] = Some(SimState::new(next_time, next_bots, next_resources));
+                next_states.push(SimState::new(next_time, next_bots, next_resources));
                 if i == 3 {
                     //If we can make a geode machine, all other options are irrelevant
                     return next_states;
@@ -136,7 +145,7 @@ impl Blueprint {
         let mut wait_state = *state;
         wait_state.time -= 1;
         wait_state.resources.iter_mut().zip(wait_state.bots.iter()).for_each(|(r, b)| *r += *b);
-        next_states[4] = Some(wait_state);
+        next_states.push(wait_state);
 
         next_states
     }
