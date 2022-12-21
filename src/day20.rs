@@ -36,7 +36,10 @@ impl FromStr for EncryptedFile{
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let data = s.split('\n').filter_map(|line| line.parse::<i64>().ok()).map(Rc::new).collect();
-        Ok(EncryptedFile{data, ..EncryptedFile::default()})
+        Ok(EncryptedFile{
+            data,
+            ..EncryptedFile::default()
+        })
     }
 }
 

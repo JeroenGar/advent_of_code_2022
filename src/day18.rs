@@ -13,7 +13,7 @@ fn main() {
 
     println!("Part 1: {}", droplet.total_surface_area());
     println!("Part 2: {}", droplet.exterior_surface_area());
-    println!("Time: {}ms", start.elapsed().as_millis());
+    println!("Time: {:?}", start.elapsed());
 }
 
 
