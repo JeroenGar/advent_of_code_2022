@@ -68,7 +68,7 @@ impl Statements {
     fn resolve_advanced(&mut self, name: &str, equality: &(String, String)) -> Result<i64, MissingStatement> {
         //IDEA: add statements, or flip them around until we can resolve name
 
-        let mut flipped_statements = vec![];
+        let mut modified_statements = vec![];
 
         while let Err(MissingStatement(missing)) = self.resolve(name) {
             //if the missing statement is one of the equality, add the equality statement
@@ -88,15 +88,15 @@ impl Statements {
             }
 
             //search for a statement which has not been flipped before that contains the missing operand and modify it's rhs
-            let statement_to_flip = self.list.iter().find(|(_, s)|
-                !flipped_statements.contains(*s) && s.contains_operand(&missing)).unwrap().1;
+            let statement_to_mod = self.list.iter().find(|(_, s)|
+                !modified_statements.contains(*s) && s.contains_operand(&missing)).unwrap().1;
 
             //update
-            let flipped_statement = statement_to_flip.change_rhs(&missing);
-            flipped_statements.push(flipped_statement.clone());
+            let mod_statement = statement_to_mod.change_rhs(&missing);
+            modified_statements.push(mod_statement.clone());
 
-            self.list.remove(&statement_to_flip.rhs().to_owned());
-            self.list.insert(flipped_statement.rhs().to_owned(), flipped_statement);
+            self.list.remove(&statement_to_mod.rhs().to_owned());
+            self.list.insert(mod_statement.rhs().to_owned(), mod_statement);
         }
 
         self.resolve(name)
