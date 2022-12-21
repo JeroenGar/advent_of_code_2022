@@ -46,16 +46,18 @@ struct Statements {
 }
 
 #[derive(Debug)]
-struct MissingStatement(String);
+struct MissingRHS(String);
 
 impl Statements {
-    fn resolve(&mut self, name: &str) -> Result<i64, MissingStatement> {
+    fn resolve(&mut self, name: &str) -> Result<i64, MissingRHS> {
         match self.list.get(name) {
-            None => Err(MissingStatement(name.to_owned())),
+            None => Err(MissingRHS(name.to_owned())),
             Some(Statement::Number(_, n)) => Ok(*n),
             Some(Statement::Op(_, a, op, b)) => {
                 let (a,op,b) = (a.clone(),*op,b.clone());
-                let res = do_op(self.resolve(&a)?, op, self.resolve(&b)?);
+                let res_a =self.resolve(&a)?;
+                let res_b = self.resolve(&b)?;
+                let res = do_op(res_a, op, res_b);
 
                 //replace the statement with the result
                 self.list.insert(name.to_owned(), Statement::Number(name.to_owned(), res));
@@ -65,15 +67,12 @@ impl Statements {
         }
     }
 
-    fn resolve_advanced(&mut self, name: &str, equality: &(String, String)) -> Result<i64, MissingStatement> {
-        //IDEA: add statements, or flip them around until we can resolve name
-
+    fn resolve_advanced(&mut self, name: &str, equality: &(String, String)) -> Result<i64, MissingRHS> {
         let mut modified_statements = vec![];
 
-        while let Err(MissingStatement(missing)) = self.resolve(name) {
-            //if the missing statement is one of the equality, add the equality statement
-            match (missing == equality.0, missing == equality.1) {
-                (false, false) => (),
+        while let Err(MissingRHS(missing_rhs)) = self.resolve(name) {
+            //if the missing rhs is one of the equality, add the equality statement
+            match (missing_rhs == equality.0, missing_rhs == equality.1) {
                 (true, false) => {
                     self.list.insert("dummy".to_owned(), Statement::Number("dummy".to_owned(), 0));
                     self.list.insert(equality.0.to_owned(), Statement::Op(equality.0.to_owned(), equality.1.to_owned(), '+', "dummy".to_owned()));
@@ -84,17 +83,20 @@ impl Statements {
                     self.list.insert(equality.1.to_owned(), Statement::Op(equality.1.to_owned(), equality.0.to_owned(), '+', "dummy".to_owned()));
                     continue;
                 }
+                (false, false) => (),
                 (true, true) => panic!("equality invalid"),
             }
 
-            //search for a statement which has not been flipped before that contains the missing operand and modify it's rhs
+            //search for a statement which has not been modified before and where the lhs contains the missing operand
             let statement_to_mod = self.list.iter().find(|(_, s)|
-                !modified_statements.contains(*s) && s.contains_operand(&missing)).unwrap().1;
+                !modified_statements.contains(*s) && s.contains_operand(&missing_rhs))
+                .ok_or_else(|| MissingRHS(missing_rhs.clone()))?.1;
 
-            //update
-            let mod_statement = statement_to_mod.change_rhs(&missing);
+            //modify the statement so the missing operand is the rhs
+            let mod_statement = statement_to_mod.change_rhs(&missing_rhs);
+
+            //update datastructures
             modified_statements.push(mod_statement.clone());
-
             self.list.remove(&statement_to_mod.rhs().to_owned());
             self.list.insert(mod_statement.rhs().to_owned(), mod_statement);
         }
