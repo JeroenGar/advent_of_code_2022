@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::hash::BuildHasherDefault;
 
 use fxhash::FxHasher;
+use itertools::Itertools;
 
 const INPUT: &str = include_str!("../input/2022/day21.txt");
 
@@ -14,42 +15,42 @@ fn main() {
             let statement = Statement::from_str(l);
             (statement.rhs().to_owned(), statement)
         }
-        ).collect::<HashMap<String, Statement, BuildHasherDefault<FxHasher>>>();
+        ).collect::<HashMap<[char;4], Statement, BuildHasherDefault<FxHasher>>>();
 
     let statements = Statements {
         list: statements
     };
 
-    println!("Part 1: {}", statements.clone().resolve("root").unwrap());
+    println!("Part 1: {}", statements.clone().resolve(&['r','o','o','t']).unwrap());
 
     let mut statements_pt2 = statements.clone();
-    statements_pt2.list.remove("humn");
-    let root = statements_pt2.list.remove("root").unwrap();
+    statements_pt2.list.remove(&['h','u','m','n']);
+    let root = statements_pt2.list.remove(&['r','o','o','t']).unwrap();
     let equality = match root {
         Statement::Op(_, a, _, b) => (a, b),
         _ => panic!("root is not an op"),
     };
 
-    println!("Part 2: {}", statements_pt2.resolve_advanced("humn", &equality).unwrap());
+    println!("Part 2: {}", statements_pt2.resolve_advanced(&['h','u','m','n'], &equality).unwrap());
     println!("Time: {:?}", start.elapsed());
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Statement {
-    Number(String, i64),
-    Op(String, String, char, String),
+    Number([char;4], i64),
+    Op([char;4], [char;4], char, [char;4]),
 }
 
 #[derive(Debug, Clone)]
 struct Statements {
-    list: HashMap<String, Statement, BuildHasherDefault<FxHasher>>,
+    list: HashMap<[char;4], Statement, BuildHasherDefault<FxHasher>>,
 }
 
 #[derive(Debug)]
-struct MissingRHS(String);
+struct MissingRHS([char;4]);
 
 impl Statements {
-    fn resolve(&mut self, name: &str) -> Result<i64, MissingRHS> {
+    fn resolve(&mut self, name: &[char;4]) -> Result<i64, MissingRHS> {
         match self.list.get(name) {
             None => Err(MissingRHS(name.to_owned())),
             Some(Statement::Number(_, n)) => Ok(*n),
@@ -67,20 +68,21 @@ impl Statements {
         }
     }
 
-    fn resolve_advanced(&mut self, name: &str, equality: &(String, String)) -> Result<i64, MissingRHS> {
+    fn resolve_advanced(&mut self, name: &[char;4], equality: &([char;4], [char;4])) -> Result<i64, MissingRHS> {
         let mut modified_statements = vec![];
 
-        while let Err(MissingRHS(missing_rhs)) = self.resolve(name) {
+        let mut to_resolve = name.to_owned();
+        while let Err(MissingRHS(missing_rhs)) = self.resolve(&to_resolve) {
             //if the missing rhs is one of the equality, add the equality statement
             match (missing_rhs == equality.0, missing_rhs == equality.1) {
                 (true, false) => {
-                    self.list.insert("dummy".to_owned(), Statement::Number("dummy".to_owned(), 0));
-                    self.list.insert(equality.0.to_owned(), Statement::Op(equality.0.to_owned(), equality.1.to_owned(), '+', "dummy".to_owned()));
+                    self.list.insert(['d','m','m','y'], Statement::Number(['d','m','m','y'], 0));
+                    self.list.insert(equality.0.to_owned(), Statement::Op(equality.0.to_owned(), equality.1.to_owned(), '+', ['d','m','m','y']));
                     continue;
                 }
                 (false, true) => {
-                    self.list.insert("dummy".to_owned(), Statement::Number("dummy".to_owned(), 0));
-                    self.list.insert(equality.1.to_owned(), Statement::Op(equality.1.to_owned(), equality.0.to_owned(), '+', "dummy".to_owned()));
+                    self.list.insert(['d','m','m','y'], Statement::Number(['d','m','m','y'], 0));
+                    self.list.insert(equality.1.to_owned(), Statement::Op(equality.1.to_owned(), equality.0.to_owned(), '+', ['d','m','m','y']));
                     continue;
                 }
                 (false, false) => (),
@@ -99,6 +101,8 @@ impl Statements {
             modified_statements.push(mod_statement.clone());
             self.list.remove(&statement_to_mod.rhs().to_owned());
             self.list.insert(mod_statement.rhs().to_owned(), mod_statement);
+
+            to_resolve = missing_rhs;
         }
 
         self.resolve(name)
@@ -116,48 +120,48 @@ fn do_op(a: i64, op: char, b: i64) -> i64 {
 }
 
 impl Statement {
-    fn rhs(&self) -> &str {
+    fn rhs(&self) -> &[char;4] {
         match self {
             Statement::Number(n, _) => n,
             Statement::Op(n, _, _, _) => n,
         }
     }
 
-    fn contains_operand(&self, operand: &str) -> bool {
+    fn contains_operand(&self, operand: &[char;4]) -> bool {
         match self {
             Statement::Number(_, _) => false,
             Statement::Op(_, a, _, b) => a == operand || b == operand,
         }
     }
 
-    fn change_rhs(&self, new_rhs: &str) -> Statement {
+    fn change_rhs(&self, new_rhs: &[char;4]) -> Statement {
         match self {
             Statement::Op(rhs, a, op, b) => {
                 let (rhs, a, b) = (rhs.to_owned(), a.to_owned(), b.to_owned());
                 match op {
                     '+' => { // rhs = a + b
-                        match (a == new_rhs, b == new_rhs) {
+                        match (a == *new_rhs, b == *new_rhs) {
                             (true, false) => Statement::Op(a, rhs, '-', b), //a = rhs - b
                             (false, true) => Statement::Op(b, rhs, '-', a), //b = rhs - a
                             (_, _) => panic!("invalid flip"),
                         }
                     }
                     '-' => { // rhs = a - b
-                        match (a == new_rhs, b == new_rhs) {
+                        match (a == *new_rhs, b == *new_rhs) {
                             (true, false) => Statement::Op(a, rhs, '+', b), //a = rhs + b
                             (false, true) => Statement::Op(b, a, '-', rhs), //b = a - rhs
                             (_, _) => panic!("invalid flip"),
                         }
                     }
                     '*' => { // rhs = a * b
-                        match (a == new_rhs, b == new_rhs) {
+                        match (a == *new_rhs, b == *new_rhs) {
                             (true, false) => Statement::Op(a, rhs, '/', b), //a = rhs / b
                             (false, true) => Statement::Op(b, rhs, '/', a), //b = rhs / a
                             (_, _) => panic!("invalid flip"),
                         }
                     }
                     '/' => { // rhs = a / b
-                        match (a == new_rhs, b == new_rhs) {
+                        match (a == *new_rhs, b == *new_rhs) {
                             (true, false) => Statement::Op(a, rhs, '*', b), //a = rhs * b
                             (false, true) => Statement::Op(b, rhs, '*', a), //b = rhs * a
                             (_, _) => panic!("invalid flip"),
@@ -171,13 +175,13 @@ impl Statement {
     }
 
     fn from_str(s: &str) -> Statement {
-        let rhs = s.split(':').next().unwrap().to_owned();
+        let rhs = s.split(':').next().unwrap().chars().collect_vec().try_into().unwrap();
         match s.split(':').nth(1).unwrap().trim().parse() {
             Ok(n) => Statement::Number(rhs, n),
             Err(_) => {
-                let a = s.trim().split(' ').nth(1).unwrap().to_owned();
+                let a = s.trim().split(' ').nth(1).unwrap().chars().collect_vec().try_into().unwrap();
                 let op = s.trim().split(' ').nth(2).unwrap().chars().next().unwrap();
-                let b = s.trim().split(' ').nth(3).unwrap().to_owned();
+                let b = s.trim().split(' ').nth(3).unwrap().chars().collect_vec().try_into().unwrap();
                 Statement::Op(rhs, a, op, b)
             }
         }
