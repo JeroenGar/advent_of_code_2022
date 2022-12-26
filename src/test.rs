@@ -1,6 +1,19 @@
-use std::ops::Rem;
+fn main(){
 
-pub fn main() {
-    let result = (-3_i32).rem_euclid(30);
-    dbg!(result);
 }
+
+struct Test{
+    test: bool
+}
+
+impl<'c, 'a : 'c, 'b : 'c> Test{
+    fn get<T>(&self, vec_1: &'a Vec<T>, vec_2: &'b Vec<T>) -> &'c T{
+        match self.test {
+            true => vec_1.first().unwrap(),
+            false => vec_2.first().unwrap()
+        }
+    }
+
+
+}
+
