@@ -33,11 +33,11 @@ impl Valley {
         let mut queue = BinaryHeap::new();
         let mut visited = HashSet::new();
         let mut best_time = i32::MAX;
-        queue.push(Reverse((manhattan(from, to), from, time)));
+        queue.push(Reverse((manhattan(from, to), from, time))); //Minheap on distance to exit
 
         while let Some(Reverse((dist, pos, time))) = queue.pop() {
             if dist > (best_time - time) {
-                continue; //can't do better
+                continue; //Skip, above upperbound
             }
             if pos == to {
                 best_time = best_time.min(time); //arrived
@@ -49,8 +49,8 @@ impl Valley {
                 .filter(|&p| self.pos_is_blizzard_free(p, time + 1)) //no blizzard there
                 .for_each(|p| {
                     if !visited.contains(&(p, time + 1)){
+                        //Only consider previously unvisited states
                         visited.insert((p, time + 1));
-                        //add to the queue sorted by minimimal manhattan distance to the destination
                         queue.push(Reverse((manhattan(p, to), p, time + 1)));
                     }
                 });
