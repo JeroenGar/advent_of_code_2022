@@ -10,7 +10,7 @@ fn main() {
     println!("Part 1: {}", part1);
     cave.add_bedrock();
     println!("Part 2: {}", part1 + cave.simulate());
-    println!("Time: {}ms", start.elapsed().as_millis());
+    println!("Time: {:?}", start.elapsed());
 }
 
 #[derive(Debug, Clone)]

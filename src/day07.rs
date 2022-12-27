@@ -1,9 +1,10 @@
 use std::slice::Iter;
 use std::time::Instant;
 
+const INPUT: &str = include_str!("../input/2022/day07.txt");
+
 fn main() {
-    let input = std::fs::read_to_string("../input/2022/day07_extra.txt").unwrap();
-    let lines = input.lines().collect::<Vec<&str>>();
+    let lines = INPUT.lines().collect::<Vec<&str>>();
     //----------------------------------------------------------------------------------------------
     println!("Non recursive:");
     let start = std::time::Instant::now();
@@ -20,7 +21,7 @@ fn main() {
     let part_2 = all_dirs.iter()
         .filter(|d| **d >= space_required)
         .min().unwrap();
-    println!("Time: {}ms", start.elapsed().as_millis());
+    println!("Time: {:?}", start.elapsed());
     println!("Part 1: {}", part_1);
     println!("Part 2: {}", part_2);
 
@@ -39,7 +40,7 @@ fn main() {
     let part_2 = all_dirs.iter()
         .filter(|d| **d >= space_required)
         .min().unwrap();
-    println!("Time: {}μs", start.elapsed().as_micros());
+    println!("Time: {:?}", start.elapsed());
     println!("Part 1: {}", part_1);
     println!("Part 2: {}", part_2);
 }

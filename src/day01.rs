@@ -1,13 +1,12 @@
-use std::fs;
-use std::path::Path;
 use std::str::FromStr;
 use aoc2022::parse_to_vec;
 
 const N_HIGHEST_CALORIE_ELVES : u32 = 3;
 
+const INPUT: &str = include_str!("../input/2022/day01.txt");
+
 fn main(){
-    let input = fs::read_to_string(Path::new("../input/2022/day01.txt")).expect("Could not read file");
-    let mut elves : Vec<Elf> = parse_to_vec(&input, "\n\n").unwrap();
+    let elves : Vec<Elf> = parse_to_vec(INPUT, "\n\n").unwrap();
 
     println!("Part 1: {}", elves.iter().map(|e| e.cals).max().unwrap());
 

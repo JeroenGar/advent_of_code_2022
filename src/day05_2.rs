@@ -1,15 +1,15 @@
 use std::str::FromStr;
 use std::time::Instant;
-use std::vec;
 
 use itertools::Itertools;
 
 use aoc2022::parse_to_vec;
 
+const INPUT: &str = include_str!("../input/2022/day05.txt");
+
 pub fn main() {
     let start = Instant::now();
-    let input = std::fs::read_to_string("input/2022/day5_88MB.txt").unwrap();
-    let mut input_split = input.split("\n\n");
+    let mut input_split = INPUT.split("\n\n");
 
     let crate_stacks_input = input_split.next().unwrap();
     let crane_operations = input_split.next().unwrap();
@@ -30,7 +30,7 @@ pub fn main() {
     //We will simulate the crane operations in reverse so we need to reverse the operation and the order
     let rev_crane_ops: Vec<CraneOp> = crane_ops.iter().rev().map(|op| op.reverse()).collect();
 
-    println!("Parsed in {}ms", start.elapsed().as_millis());
+    println!("Parsed in {:?}", start.elapsed());
 
     let start_part_1 = Instant::now();
     //Positions are indexed based on their current stack
@@ -42,7 +42,7 @@ pub fn main() {
     let dur_part_1 = start_part_1.elapsed();
 
     println!("Part 1: {}", to_string(&positions_1, &crate_stacks));
-    println!("in {}ms", dur_part_1.as_millis());
+    println!("in {:?}", dur_part_1);
 
     //Do the same for part 2 but without reversing the crate order when executing the crane operations
     let start_part_2 = Instant::now();
@@ -52,7 +52,7 @@ pub fn main() {
     let dur_part_2 = start_part_2.elapsed();
 
     println!("Part 2: {}", to_string(&positions_2, &crate_stacks));
-    println!("in {}ms", dur_part_2.as_millis());
+    println!("in {:?}", dur_part_2);
 }
 
 pub struct CraneOp {

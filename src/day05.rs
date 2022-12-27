@@ -2,14 +2,15 @@ use std::collections::VecDeque;
 use std::str::FromStr;
 use aoc2022::parse_to_vec;
 
+const INPUT: &str = include_str!("../input/2022/day05.txt");
+
 pub fn main(){
-    let input = std::fs::read_to_string("input/2022/day5_6MB.txt").unwrap();
-    let mut input_split = input.split("\n\n");
+    let mut input_split = INPUT.split("\n\n");
 
     let crate_stacks_input = input_split.next().unwrap();
     let crane_operations = input_split.next().unwrap();
 
-    let mut crate_stacks_lines = crate_stacks_input.split('\n').rev().skip(1).collect::<Vec<&str>>();
+    let crate_stacks_lines = crate_stacks_input.split('\n').rev().skip(1).collect::<Vec<&str>>();
     let crate_char_indices : [usize; 9] = [1,5,9,13,17,21,25,29,33]; //indices of the crate characters in the lines
 
     let crate_stacks = (0..9).map(|i|{

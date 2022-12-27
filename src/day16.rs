@@ -58,7 +58,7 @@ fn main() {
 
     println!("Part 1: {}", part_1);
     println!("Part 2: {}", part_2);
-    println!("Time: {}ms", start.elapsed().as_millis());
+    println!("Time: {:?}", start.elapsed());
 }
 
 struct Network {

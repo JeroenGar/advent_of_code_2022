@@ -33,7 +33,7 @@ fn main() {
     monkeys_2.sort_by(|a, b| a.n_inspections.cmp(&b.n_inspections).reverse());
     println!("Part 2: {}", monkeys_2[0].n_inspections * monkeys_2[1].n_inspections);
 
-    println!("Time: {}ms", start.elapsed().as_millis());
+    println!("Time: {:?}", start.elapsed());
 }
 
 #[derive(Clone)]

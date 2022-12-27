@@ -18,7 +18,7 @@ fn main() {
     graph.node_heights.push(virtual_start);
     graph.edges.push(virtual_edges);
     println!("Part 2: {}", graph.dijkstra() - 1); // -1 to account for the virtual start node
-    println!("Time: {}ms", start.elapsed().as_millis());
+    println!("Time: {:?}", start.elapsed());
 }
 
 struct Graph {

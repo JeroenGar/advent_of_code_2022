@@ -15,7 +15,7 @@ fn main(){
 
     println!("Part 1: {}", part_1);
     println!("Part 2: {}", part_2);
-    println!("Time: {}ms", duration.as_millis());
+    println!("Time: {:?}", duration);
 }
 
 fn simulate(rope: &mut [RopeSegment], head_actions: &[Action]) -> (usize,usize) {

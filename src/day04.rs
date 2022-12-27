@@ -1,10 +1,9 @@
-use std::fs;
-use std::path::Path;
 use std::str::{FromStr, Split};
 
+const INPUT: &str = include_str!("../input/2022/day04.txt");
+
 pub fn main() {
-    let input = fs::read_to_string(Path::new("../input/2022/day04.txt")).expect("Could not read file");
-    let range_pairs: Vec<RangePair> = aoc2022::parse_to_vec(&input, "\n").unwrap();
+    let range_pairs: Vec<RangePair> = aoc2022::parse_to_vec(INPUT, "\n").unwrap();
 
     println!("Part 1: {}", range_pairs.iter().filter(|r| { r.inclusive() }).count());
     println!("Part 2: {}", range_pairs.iter().filter(|r| { r.overlaps() }).count());

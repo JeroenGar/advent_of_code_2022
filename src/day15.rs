@@ -59,7 +59,7 @@ fn main() {
     };
 
     println!("Part 2: {}", part2);
-    println!("Time: {}us", start.elapsed().as_micros());
+    println!("Time: {:?}", start.elapsed());
 }
 
 #[derive(Debug, Clone)]

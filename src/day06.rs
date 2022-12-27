@@ -1,14 +1,14 @@
-use std::fs;
 use std::ops::Range;
-use std::path::Path;
 use std::time::Instant;
 
 use itertools::Itertools;
 
+const INPUT: &str = include_str!("../input/2022/day06.txt");
+const INPUT_EXTRA: &str = include_str!("../input/2022/day06_extra.txt");
+
 fn main() {
-    let input = std::fs::read_to_string("../input/2022/day06.txt").unwrap();
-    println!("{} chars", input.len());
-    let char_vec = input.chars().filter(|c| {
+    println!("{} chars", INPUT.len());
+    let char_vec = INPUT.chars().filter(|c| {
         *c as u32 >= 32 && *c as u32 <= 126
     }).collect::<Vec<char>>();
 
@@ -16,9 +16,8 @@ fn main() {
     println!("Part 2: {}", find_marker_naive(&char_vec, 14).unwrap());
     println!();
     //Extra
-    let input = std::fs::read_to_string("../input/2022/day06_extra.txt").unwrap();
-    println!("{} chars", input.len());
-    let char_vec = input.chars().filter(|c| {
+    println!("{} chars", INPUT_EXTRA.len());
+    let char_vec = INPUT_EXTRA.chars().filter(|c| {
         *c as u32 >= 32 && *c as u32 <= 126
     }).collect::<Vec<char>>();
     let n_threads = 8;
@@ -26,10 +25,10 @@ fn main() {
     println!("{} threads", n_threads);
 
     let start = Instant::now();
-    println!("Part 1: {} ({}µs)", find_range_markers_mt(&char_vec, 94..95, n_threads).iter().sum::<usize>(), start.elapsed().as_micros());
+    println!("Part 1: {} ({:?})", find_range_markers_mt(&char_vec, 94..95, n_threads).iter().sum::<usize>(), start.elapsed());
 
     let start = Instant::now();
-    println!("Part 2: {} ({}µs)", find_range_markers_mt(&char_vec, 1..95, n_threads).iter().sum::<usize>(), start.elapsed().as_micros());
+    println!("Part 2: {} ({:?})", find_range_markers_mt(&char_vec, 1..95, n_threads).iter().sum::<usize>(), start.elapsed());
 }
 
 fn find_marker_naive(input: &Vec<char>, n_unique_chars: usize) -> Option<usize> {
@@ -73,13 +72,13 @@ fn find_range_markers_mt(input: &Vec<char>, range: Range<usize>, n_threads: usiz
         let mut results_iter_mut = results.iter_mut();
         for i in 0..n_threads {
             let (mut start,end) = blocks[i];
-            let mut result_slice = results_iter_mut.next().unwrap();
+            let result_slice = results_iter_mut.next().unwrap();
             let t_range = range.clone();
             s.spawn(move |_| {
                 for j in t_range{
                     let result = find_marker_efficient(input, start, end, j);
-                    if result.is_some(){
-                        start = result.unwrap() - j;
+                    if let Some(result) = result{
+                        start = result - j;
                     }
                     else{
                         start = end;
@@ -98,7 +97,7 @@ fn find_range_markers_mt(input: &Vec<char>, range: Range<usize>, n_threads: usiz
 fn create_blocks(input_len : usize, n_unique_chars: usize, n_threads: usize) -> Vec<(usize,usize)>{
     let overlap = n_unique_chars - 1;
     (0..n_threads).map(|i| {
-        let start = (i * (input_len) / n_threads);
+        let start = i * (input_len) / n_threads;
         let end = ((i + 1) * (input_len) / n_threads) + overlap;
         (usize::max(0,start), usize::min(end,input_len))
     }).collect::<Vec<(usize, usize)>>()

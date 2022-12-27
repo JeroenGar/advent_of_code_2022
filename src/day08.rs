@@ -12,7 +12,7 @@ fn main() {
     let n_visible = visibility_matrix.iter().flatten().filter(|v| **v).count();
     let max_scenic = scenic_matrix.iter().flatten().max().unwrap();
 
-    println!("Time: {}μs", start.elapsed().as_micros());
+    println!("Time: {:?}", start.elapsed());
     println!("Part 1: {}", n_visible);
     println!("Part 2: {}", max_scenic);
 }

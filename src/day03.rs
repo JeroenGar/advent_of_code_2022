@@ -1,12 +1,12 @@
-use std::fs;
 use std::str::FromStr;
 use itertools::Itertools;
 
 use aoc2022::parse_to_vec;
 
+const INPUT: &str = include_str!("../input/2022/day03.txt");
+
 fn main() {
-    let input = fs::read_to_string("../input/2022/day03.txt").expect("Could not read file");
-    let rucksacks: Vec<Rucksack> = parse_to_vec(&input, "\n").unwrap();
+    let rucksacks: Vec<Rucksack> = parse_to_vec(INPUT, "\n").unwrap();
 
     let sum_misplaced_items = rucksacks.iter()
         .map(|r| r.misplaced_item.unwrap()).sum::<u32>();
@@ -40,7 +40,7 @@ impl FromStr for Rucksack {
         let misplaced_item = item_in_c1.iter()
             .zip(item_in_c2.iter())
             .zip(0..53)
-            .find(|((a, b), i)| **a && **b)
+            .find(|((a, b), _)| **a && **b)
             .map(|(_, i)| i);
 
         let item_present = item_in_c1.iter().zip(item_in_c2.iter())
