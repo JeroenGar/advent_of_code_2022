@@ -16,6 +16,7 @@ fn main() {
         active_valves[network.start] = true;
         dfs(&network, network.start, 0, 0, 30, &mut active_valves)
     };
+    println!("Part 1: {}", part_1);
 
     let part_2 = {
         let non_zero_pressure_valves = network.valves.iter().enumerate()
@@ -56,7 +57,6 @@ fn main() {
         }).max().unwrap()
     };
 
-    println!("Part 1: {}", part_1);
     println!("Part 2: {}", part_2);
     println!("Time: {:?}", start.elapsed());
 }

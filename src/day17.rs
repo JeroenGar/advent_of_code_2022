@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::str::FromStr;
 
 use itertools::Itertools;
@@ -22,6 +21,7 @@ fn main() {
     };
 
     println!("Part 1: {}", part_1);
+    println!("Time: {:?}", start.elapsed());
 
     let part_2 = {
         //Search a cycle: two separate iterations where the shaft, rocks and gas patterns are in the same state

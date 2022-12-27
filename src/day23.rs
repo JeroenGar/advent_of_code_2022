@@ -1,17 +1,20 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
+use std::time::Instant;
 use itertools::Itertools;
 use crate::Direction::{N, S, E, W, NE, NW, SE, SW};
 
 const INPUT: &str = include_str!("../input/2022/day23.txt");
 
 pub fn main(){
+    let start = Instant::now();
     let mut elves = parse(INPUT);
     elves.simulate(10);
     let part_1 = elves.empty_tiles_in_bbox();
-    elves.simulate(10_000_000);
-    let part_2 = elves.iterations;
     println!("Part 1: {}", part_1);
+    elves.simulate(u32::MAX as usize);
+    let part_2 = elves.iterations;
     println!("Part 2: {}", part_2);
+    println!("Time: {:?}", start.elapsed());
 }
 
 struct Elves{
@@ -23,18 +26,19 @@ impl Elves {
     fn simulate(&mut self, n_times: usize){
         for i in self.iterations..(self.iterations + n_times) {
             let proposals = self.locations.values()
-                .map(|elf| elf.propose(&self.locations, i))
-                .flatten().collect_vec();
-            let mut proposal_target_map = HashMap::new();
-            for (from, to) in proposals {
-                if proposal_target_map.contains_key(&to) {
-                    proposal_target_map.insert(to, Err(()));
-                } else {
-                    proposal_target_map.insert(to, Ok(from));
-                }
+                .flat_map(|elf| elf.propose(&self.locations, i))
+                .collect_vec();
+
+            let mut proposal_to_map = HashMap::new();
+            for Proposal(from, to) in proposals {
+                proposal_to_map.insert(to, match proposal_to_map.get(&to) {
+                    Some(_) => Err(ConflictingProposals),
+                    None => Ok(from),
+                });
             }
+
             let mut no_elves_moved = true;
-            for (to, from) in proposal_target_map {
+            for (to, from) in proposal_to_map {
                 if let Ok(from) = from {
                     no_elves_moved = false;
                     let mut elf = self.locations.remove(&from).unwrap();
@@ -59,28 +63,29 @@ impl Elves {
     }
 }
 
+struct Proposal((i32,i32), (i32,i32));
+struct ConflictingProposals;
+
 struct Elf{
     x : i32,
     y : i32,
 }
 
 impl Elf{
-    fn propose(&self, others: &HashMap<(i32,i32), Elf>, iteration : usize) -> Option<((i32,i32),(i32,i32))> {
+    fn propose(&self, others: &HashMap<(i32,i32), Elf>, iteration : usize) -> Option<Proposal> {
         if [N,S,E,W,NE,NW,SE,SW].iter().map(|&d| self.step_in_dir(d)).all(|p| !others.contains_key(&p)) {
             return None;
         }
         const RULES: [([Direction; 3], Direction); 4] = [([N,NE,NW], N),([S,SE,SW], S),([W,NW,SW], W),([E,NE,SE], E)];
-        let mut proposal = None;
 
         for i in 0..RULES.len() {
             let rule_index = (i + iteration) % RULES.len(); // rotate rules
             let (rule, dir) = &RULES[rule_index];
             if rule.iter().map(|&d| self.step_in_dir(d)).all(|p| !others.contains_key(&p)) {
-                proposal = Some(((self.x, self.y), self.step_in_dir(*dir)));
-                break;
+                return Some(Proposal((self.x, self.y), self.step_in_dir(*dir)));
             }
         }
-        proposal
+        None
     }
 
     fn step_in_dir(&self, dir: Direction) -> (i32, i32){
